@@ -28,6 +28,14 @@ double *c;
 double *d;
 double *U;
 
+void gibbs_H(int * h0, int y0, unsigned char *x0);
+int gibbs_Y(int* h0);
+
+double uniform()
+{
+    return rand()/(RAND_MAX + 1.0);
+}
+
 
 int ReverseInt (int i)
 {   
@@ -168,13 +176,13 @@ void COD_training_update(int yi, unsigned char * xi)
     for(int i=0; i<n ;i++)
     {
         double sum = c[i];
-        for(j = 0; j< D; j++)
+        for(int j = 0; j< D; j++)
         {
             sum = sum + W[i*n+j] * (int) x0[j]; 
         }
 
         //Can be optimized
-        for(j = 0; j < K; j++)
+        for(int j = 0; j < K; j++)
         {
             if(j==y0) sum = sum + U[i*n+j];
         }
@@ -184,8 +192,9 @@ void COD_training_update(int yi, unsigned char * xi)
 
 
     //Negative Phase
-    double * h0 = (double *) malloc(sizeof(double) * n);
+    int * h0 = (int *) malloc(sizeof(int) * n);
     gibbs_H(h0, y0, x0);
+    int y1 = gibbs_Y(h0);
     
 }
 
@@ -205,11 +214,26 @@ void COD_train()
  Gibbs samplings for H (hidden nodes)
  Modifies h0
 */
-void gibbs_H(double * h0, int y0, unsigned char *x0)
+void gibbs_H(int * h0, int y0, unsigned char *x0)
 {
     for(int j=0;j<n;j++)
     {
+        double sum = c[j] + U[j*n+y0];
+        for(int i=0;i<D;i++)
+        {
+            sum = sum + W[j*n+i] * (int) x0[j];
+        }
 
+        double p = sigmoid(sum);
+        double rand = uniform();
+        if(rand>p)
+        {
+            h0[j] = 1;
+        }
+        else
+        {
+            h0[j] = 0;
+        }
     }
 }
 
@@ -217,13 +241,19 @@ void gibbs_H(double * h0, int y0, unsigned char *x0)
  Gibbs samplings for Y (label)
  Returns value for Y 
 */
-int gibbs_Y(double* h0);
+int gibbs_Y(int* h0)
+{
+    return 0;
+}
 
  /*
  Gibbs samplings for X (image)
  Modifies x
 */
-void gibbs_X(char * x, double * h0);
+void gibbs_X(char * x, double * h0)
+{
+    
+}
 
 
 int main()
