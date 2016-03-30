@@ -256,15 +256,31 @@ void gibbs_X(char * x, double * h0)
 }
 
 
+void image_pp(){
+
+for(int i=0; i< num_img_train*28*28; i++){
+
+
+images_train[i]=  (int)images_train[i] <127 ? 0 : 1;
+  
+}
+
+
+}
+
+
 int main()
 {
     get_images(&num_img_train, &images_train, &labels_train,
         "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
     
     printf("%d\n",num_img_train);
-    int sample = 1000;
+    int sample = 1234;
     
     printf("sample label %d\n",labels_train[sample]);   
+
+    printf("Image Preprocessing \n");
+    image_pp();
 
     
     for (int i = 0; i < 28; i++) {
