@@ -243,6 +243,32 @@ void gibbs_H(int * h0, int y0, unsigned char *x0)
 */
 int gibbs_Y(int* h0)
 {
+    double sum = 0;
+    double *y_temp = (double *) malloc(sizeof(double)*K);
+    for(int i=0;i<K;i++)
+    {
+        double val = d[i];
+        for(int j=0;j<n;j++)
+        {
+            val = val + U[j*n+y] * h0[j];
+        }
+        y_temp[i] = exp(val);
+        sum = sum + y_temp[i];
+    }
+    
+    for(int i=0;i<K;i++)
+    {
+        y_temp[i] = y_temp[i]/sum;
+    }
+    
+    double rand = uniform();
+    sum = 0;
+    
+    for (<#initialization#>; <#condition#>; <#increment#>) {
+        <#statements#>
+    }
+    
+    
     return 0;
 }
 
@@ -256,31 +282,15 @@ void gibbs_X(char * x, double * h0)
 }
 
 
-void image_pp(){
-
-for(int i=0; i< num_img_train*28*28; i++){
-
-
-images_train[i]=  (int)images_train[i] <127 ? 0 : 1;
-  
-}
-
-
-}
-
-
 int main()
 {
     get_images(&num_img_train, &images_train, &labels_train,
         "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
     
     printf("%d\n",num_img_train);
-    int sample = 1234;
+    int sample = 1000;
     
     printf("sample label %d\n",labels_train[sample]);   
-
-    printf("Image Preprocessing \n");
-    image_pp();
 
     
     for (int i = 0; i < 28; i++) {
