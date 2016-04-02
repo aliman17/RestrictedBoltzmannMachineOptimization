@@ -517,7 +517,7 @@ void predict_images (){
 
     predictions =(int *)malloc(sizeof(int)*num_img_test);
 for(int i=0;i<num_img_test;i++){
-
+    printf("predicting image %d\n",i+1);
     predictions[i]=Predict_one_image(get_image(i, images_test));
 
     }
