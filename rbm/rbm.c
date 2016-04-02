@@ -41,7 +41,7 @@ void gibbs_X(int * x, int * h0);
 
 double uniform()
 {
-    return rand() / (RAND_MAX + 1.0);
+    return rand() / (RAND_MAX );
 }
 
 
@@ -220,13 +220,13 @@ int get_label(int num, int * labels)
  */
 double sigmoid(double val)
 {
-    return 1 / (1 + exp(-1 * val));
+    return 1.0 / (1.0 + exp(-1.0 * val));
 }
 
 /*
  Performs next step of training with a new image and it's class
 */
-void COD_training_update(int yi, int * xi)
+void COD_training_update(int yi, int * xi) //DONE
 {
     //Positive Phase
     int y0 = yi;
@@ -545,7 +545,13 @@ int main()
 
     image_pp();
 
-    check_images_labels(400, 222);
+    check_images_labels(300, 222);
+
+
+
+
+
+
 
 
     init_param();

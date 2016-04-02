@@ -39,3 +39,25 @@ void check_images_labels(int sample1, int sample2){
 
 
 }
+
+
+
+
+void test_get_img_func(){
+
+   printf("%d\n",num_img_train);
+    int sample = 300;
+    
+    printf("sample label get image label test %d\n",get_label(sample, labels_train));   
+
+    int * cur = get_image(sample, images_train);
+    for (int i = 0; i < 28; i++) {
+        for (int j = 0; j < 28 - 1; j++) {
+            //imageout << (double )(test).images[sample*(28*28)+28*i+j] << " ";
+            printf("%d ",cur[28*i+j]);
+        }
+        //imageout << (double )(test).images[sample*(28*28)+28*i+27] << endl;
+        printf("%d \n",cur[28*i+27]);
+    }
+    
+}
