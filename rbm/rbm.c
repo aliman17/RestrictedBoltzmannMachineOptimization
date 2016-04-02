@@ -341,8 +341,13 @@ void COD_train()
     int i;
     for(i=0;i<num_img_train;i++)
     {
-        printf("training image %d\n",i+1);
+
+        //printf("training image %d\n",i+1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
+
+
+        if(i==1000) break;
+
     }
 }
 
@@ -464,12 +469,12 @@ int Predict_one_image(int *x){
     double *numerators =(double *) malloc(sizeof(double)*K);
     
     for (int y = 0; y < K; y++) {
-        double prod = 1;
+        double prod = 0;
         for (int j = 0; j < n; j++) {
             
-            prod *= (1 + exp(U[j * K + y] + precomValues[j]));
+            prod += log((1 + exp(U[j * K + y] + precomValues[j])));
         }
-        prod = exp(d[y]) * prod;
+        prod = d[y] + prod;
         
         numerators[y] = prod;
         
@@ -479,22 +484,22 @@ int Predict_one_image(int *x){
      calculate denominator
      */
     
-    double denominator=0;
-    for(int y=0;y<K;y++){
-        denominator+=numerators[y];
-    }
+    // double denominator=0;
+    // for(int y=0;y<K;y++){
+    //     denominator+=numerators[y];
+    // }
     /*
      return most probable class
      */
     //posible optimization, the denominator is not requiered to make the predictions
     int mostProClass=0;
-    double max=numerators[0]/denominator;
+    double max=numerators[0];
     
     for(int y=1;y<K;y++){
         
-        if(max<(numerators[y]/denominator)){
+        if(max<(numerators[y])){
             mostProClass=y;
-            max=(numerators[y]/denominator);
+            max=(numerators[y]);
         }
         
         
@@ -551,12 +556,13 @@ int main()
 
     COD_train();
 
+    predict_images ();
+
+    double score =score_function();
 
 
 
-
-
-
+    printf("Score: %lf \n",score);
 
 
 
