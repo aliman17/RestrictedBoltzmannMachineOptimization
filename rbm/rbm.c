@@ -30,9 +30,9 @@ double *c;
 double *d;
 double *U;
 
-void gibbs_H(int * h0, int y0, unsigned char *x0);
+void gibbs_H(int * h0, int y0, int *x0);
 int gibbs_Y(int* h0);
-void gibbs_X(unsigned char * x, int * h0);
+void gibbs_X(int * x, int * h0);
 
 double uniform()
 {
@@ -197,7 +197,7 @@ void get_images(int *_num_img, unsigned char **_images, int **_labels, char *ima
  Get one image from the loaded set of images
  Output is a pointer to that image
 */
-unsigned char * get_image(int num, unsigned char *start)
+int * get_image(int num, int *start)
 {
     return start + num * D;
 }
@@ -252,7 +252,7 @@ void COD_training_update(int yi, int * xi)
     int * h0 = (int *) malloc(sizeof(int) * n);
     gibbs_H(h0, y0, x0);
     int y1 = gibbs_Y(h0);
-    unsigned char * x1 = (unsigned char *) malloc(sizeof(unsigned char) * D);
+    int * x1 = (int *) malloc(sizeof(int) * D);
     gibbs_X(x1,h0);
     
     double * h1_cap = (double *) malloc(sizeof(double) * n);
@@ -262,7 +262,7 @@ void COD_training_update(int yi, int * xi)
         double sum = c[i];
         for(int j = 0; j< D; j++)
         {
-            sum = sum + W[i*n+j] * (int) x1[j];
+            sum = sum + W[i*n+j] *  x1[j];
         }
         
         
@@ -344,14 +344,14 @@ void COD_train()
  Gibbs samplings for H (hidden nodes)
  Modifies h0
 */
-void gibbs_H(int * h0, int y0, unsigned char *x0)
+void gibbs_H(int * h0, int y0, int *x0)
 {
     for(int j=0;j<n;j++)
     {
         double sum = c[j] + U[j*n+y0];
         for(int i=0;i<D;i++)
         {
-            sum = sum + W[j*n+i] * (int) x0[j];
+            sum = sum + W[j*n+i] * x0[j];
         }
 
         double p = sigmoid(sum);
@@ -409,7 +409,7 @@ int gibbs_Y(int* h0)
  Gibbs samplings for X (image)
  Modifies x
 */
-void gibbs_X(unsigned char * x, int * h0)
+void gibbs_X(int * x, int * h0)
 {
     for(int i=0; i<D; i++)
     {
@@ -423,11 +423,11 @@ void gibbs_X(unsigned char * x, int * h0)
         double rand = uniform();
         if(rand>p)
         {
-            x[i] = '1';
+            x[i] = 1;
         }
         else
         {
-            x[i] = '0';
+            x[i] = 0;
         }
     }
 }
