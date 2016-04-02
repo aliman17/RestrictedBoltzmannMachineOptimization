@@ -32,8 +32,9 @@ double *b;
 double *c;
 double *d;
 double *U;
+double *h0_cap;
 
-#include "helper.h" //DO NOT MOVE to be improved
+//#include "helper.h" //DO NOT MOVE to be improved
 
 void gibbs_H(int * h0, int y0, int *x0);
 int gibbs_Y(int* h0);
@@ -86,6 +87,7 @@ void init_param()
     c = (double *) malloc(n * sizeof(double));
     d = (double *) malloc(K * sizeof(double));
     U = (double *) malloc(n * K * sizeof(double));
+    h0_cap = (double *) malloc(sizeof(double) * n);
 
     //The biases b ,c ,d are initiallez to zero
 
@@ -232,7 +234,7 @@ void COD_training_update(int yi, int * xi) //DONE
     int y0 = yi;
     int * x0 = xi;
 
-    double * h0_cap = (double *) malloc(sizeof(double) * n);
+    //double * h0_cap = (double *) malloc(sizeof(double) * n);
 
     for (int i = 0; i < n ; i++)
     {
@@ -326,13 +328,61 @@ void COD_training_update(int yi, int * xi) //DONE
         }
     }
 
-    free(h0_cap);
+    //free(h0_cap);
     free(h1_cap);
     free(x1);
     free(h0);
 
 }
 
+double energy(int y, int *x)
+{
+    double sum = 0;
+    
+    double * temp = (double *) malloc(sizeof(double)*n);
+    
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<D;j++)
+        {
+            temp[i] = W[i*D+j] * x[i];
+        }
+        sum = sum + temp[i] * h0_cap[i];
+    }
+    
+    for(int i=0; i<D ;i++)
+    {
+        sum = sum + b[i] * x[i];
+    }
+    
+    for(int i=0; i<n;i++)
+    {
+        sum = sum + c[i] * h0_cap[i];
+    }
+    
+    sum = sum + d[y];
+    
+    
+    for(int i=0;i<n;i++)
+    {
+        temp[i] = U[i*K+y];
+        sum = sum + temp[i] * h0_cap[i];
+    }
+    
+    return -1*sum;
+}
+
+double energy_for_all()
+{
+    double sum = 0;
+    
+    for(int k=0; k<num_img_train ; k++)
+    {
+        sum = sum + energy(get_label(k, labels_train), get_image(k, images_train));
+    }
+
+    return sum;
+}
 /*
  Runs CODTrainingUpdate over all images and trains the model
 */
@@ -342,9 +392,12 @@ void COD_train()
     for (i = 0; i < num_img_train; i++)
     {
 
-        printf("training image %d\n", i + 1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
-
+        if(i%100==0)
+        {
+            printf("training image %d, ", i + 1);
+            printf(" Energy:%lf\n", energy_for_all());
+        }
     }
 }
 
@@ -545,7 +598,7 @@ int main()
 
     image_pp();
 
-    check_images_labels(300, 222);
+    //check_images_labels(300, 222);
 
 
 
