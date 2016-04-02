@@ -342,7 +342,7 @@ void COD_train()
     for(i=0;i<num_img_train;i++)
     {
 
-        //printf("training image %d\n",i+1);
+        printf("training image %d\n",i+1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
 
 
