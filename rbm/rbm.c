@@ -381,7 +381,7 @@ double energy_for_all()
     
     for(int k=0; k<num_img_train ; k++)
     {
-        printf("energy image %d \n ", k);
+        //printf("energy image %d \n ", k);
         sum = sum + energy(get_label(k, labels_train), get_image(k, images_train));
     }
 
@@ -397,9 +397,9 @@ void COD_train()
     {
 
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
-         if(i%100==0)
+         if(i%5000==0)
          {
-            printf("training image %d \n ", i + 1);
+            //printf("training image %d \n ", i + 1);
             printf(" Energy:%lf\n", energy_for_all());
          }
     }
@@ -613,17 +613,16 @@ int main()
 
     init_param();
     printf(" DONE Initializing W b c d and U\n");
-
+    fflush(stdout);
+    int T=0;
+    while(1){
+    //printf("Traing time %d \n",T++);
     COD_train();
-
     predict_images ();
-
     double score = score_function();
+    printf("Errors %d %lf \n", T, score);
 
-
-
-    printf("Misclassification error: %lf \n", score);
-
+    }
 
 
 
