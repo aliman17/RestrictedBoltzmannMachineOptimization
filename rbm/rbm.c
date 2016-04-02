@@ -34,7 +34,6 @@ double *d;
 double *U;
 double *h0_cap;
 
-//#include "helper.h" //DO NOT MOVE to be improved
 
 void gibbs_H(int * h0, int y0, int *x0);
 int gibbs_Y(int* h0);
@@ -217,6 +216,10 @@ int get_label(int num, int * labels)
     return *(labels + num);
 }
 
+
+#include "helper.h" //DO NOT MOVE to be improved
+
+
 /*
  *Sigmoid Function
  */
@@ -378,6 +381,7 @@ double energy_for_all()
     
     for(int k=0; k<num_img_train ; k++)
     {
+        printf("energy image %d \n ", k);
         sum = sum + energy(get_label(k, labels_train), get_image(k, images_train));
     }
 
@@ -393,11 +397,11 @@ void COD_train()
     {
 
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
-        if(i%100==0)
-        {
-            printf("training image %d, ", i + 1);
+         if(i%100==0)
+         {
+            printf("training image %d \n ", i + 1);
             printf(" Energy:%lf\n", energy_for_all());
-        }
+         }
     }
 }
 
@@ -598,7 +602,7 @@ int main()
 
     image_pp();
 
-    //check_images_labels(300, 222);
+    check_images_labels(300, 222);
 
 
 
