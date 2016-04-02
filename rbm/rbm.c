@@ -4,8 +4,8 @@
 
 
 #define D 784      //Dimension
-#define n 2        //Number of hidden layers
-#define lambda 0.5 //Training Rate
+#define n 6000        //Number of hidden layers
+#define lambda 0.005 //Training Rate
 #define K 10       //Number of classes
 
 //Training Data
@@ -23,12 +23,17 @@ int *labels_test; //labels in the dataset
 int num_img_test; // Number of Images
 
 
+//Predictions
+int *predictions;
+
 // Training parameters
 double *W;
 double *b;
 double *c;
 double *d;
 double *U;
+
+#include "helper.h" //DO NOT MOVE to be improved
 
 void gibbs_H(int * h0, int y0, int *x0);
 int gibbs_Y(int* h0);
@@ -55,7 +60,7 @@ void image_pp(){
     images_train =(int *)malloc(sizeof(int)*D*num_img_train);
     images_test =(int *)malloc(sizeof(int)*D*num_img_test);
 
-    for(int i=0; i< num_img_train; i++)
+    for(int i=0; i< num_img_train*D; i++)
     {
         
         images_train[i]=  (int)images_train_init[i] <127 ? 0 : 1;
@@ -63,7 +68,7 @@ void image_pp(){
     }
     
     
-        for(int i=0; i< num_img_test; i++)
+        for(int i=0; i< num_img_test*D; i++)
     {
         
         images_test[i]=  (int)images_test_init[i] <127 ? 0 : 1;
@@ -234,14 +239,14 @@ void COD_training_update(int yi, int * xi)
         double sum = c[i];
         for(int j = 0; j< D; j++)
         {
-            sum = sum + W[i*n+j] * x0[j];
+            sum = sum + W[i*D+j] * x0[j];
         }
         
 
         //Can be optimized
         for(int j = 0; j < K; j++)
         {
-            if(j==y0) sum = sum + U[i*n+j];
+            if(j==y0) sum = sum + U[i*K+j];
         }
 
         h0_cap[i] = sigmoid(sum);
@@ -262,14 +267,14 @@ void COD_training_update(int yi, int * xi)
         double sum = c[i];
         for(int j = 0; j< D; j++)
         {
-            sum = sum + W[i*n+j] *  x1[j];
+            sum = sum + W[i*D+j] *  x1[j];
         }
         
         
         //Can be optimized
         for(int j = 0; j < K; j++)
         {
-            if(j==y1) sum = sum + U[i*n+j];
+            if(j==y1) sum = sum + U[i*K+j];
         }
         
         h1_cap[i] = sigmoid(sum);
@@ -282,7 +287,7 @@ void COD_training_update(int yi, int * xi)
     {
         for(int j=0; j<D;j++)
         {
-            W[i*n+j] = W[i*n+j] + lambda * (h0_cap[i]*x0[j] - h1_cap[i]*x1[j]);
+            W[i*D+j] = W[i*D+j] + lambda * (h0_cap[i]*x0[j] - h1_cap[i]*x1[j]);
         }
     }
               
@@ -314,10 +319,10 @@ void COD_training_update(int yi, int * xi)
         for(int j=0; j<K;j++)
         {
             if(j==y0)
-                U[i*n+j] = U[i*n+j] + lambda * (h0_cap[i]);
+                U[i*K+j] = U[i*K+j] + lambda * (h0_cap[i]);
             
             if(j==y1)
-                U[i*n+j] = U[i*n+j] + lambda * (-h1_cap[i]);
+                U[i*K+j] = U[i*K+j] + lambda * (-h1_cap[i]);
         }
     }
     
@@ -336,6 +341,7 @@ void COD_train()
     int i;
     for(i=0;i<num_img_train;i++)
     {
+        printf("training image %d\n",i+1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
     }
 }
@@ -348,10 +354,10 @@ void gibbs_H(int * h0, int y0, int *x0)
 {
     for(int j=0;j<n;j++)
     {
-        double sum = c[j] + U[j*n+y0];
+        double sum = c[j] + U[j*K+y0];
         for(int i=0;i<D;i++)
         {
-            sum = sum + W[j*n+i] * x0[j];
+            sum = sum + W[j*D+i] * x0[j];
         }
 
         double p = sigmoid(sum);
@@ -380,7 +386,7 @@ int gibbs_Y(int* h0)
         double val = d[i];
         for(int j=0;j<n;j++)
         {
-            val = val + U[j*n+i] * h0[j];
+            val = val + U[j*K+i] * h0[j];
         }
         y_temp[i] = exp(val);
         sum = sum + y_temp[i];
@@ -416,7 +422,7 @@ void gibbs_X(int * x, int * h0)
         double sum = b[i];
         for(int j=0; j<n ;j++)
         {
-            sum = sum + W[j*n+i]*h0[j];
+            sum = sum + W[j*D+i]*h0[j];
         }
         
         double p = sigmoid(sum);
@@ -432,7 +438,7 @@ void gibbs_X(int * x, int * h0)
     }
 }
 
-int Predict(unsigned char *x){
+int Predict_one_image(int *x){
     
     //W[j][i]=W[n*j+i] nxD
     /*
@@ -446,7 +452,7 @@ int Predict(unsigned char *x){
     for(int j=0; j<n;j++){
         double sum=0;
         for(int i=0;i<D;i++){
-            sum += W[j*n+i]*(double)x[i];
+            sum += W[j*D+i]*(double)x[i];
         }
         precomValues[j]=c[j]+sum;
     }
@@ -461,7 +467,7 @@ int Predict(unsigned char *x){
         double prod = 1;
         for (int j = 0; j < n; j++) {
             
-            prod *= (1 + exp(U[j * n + y] + precomValues[j]));
+            prod *= (1 + exp(U[j * K + y] + precomValues[j]));
         }
         prod = exp(d[y]) * prod;
         
@@ -502,6 +508,30 @@ int Predict(unsigned char *x){
     
 }
 
+void predict_images (){
+
+    predictions =(int *)malloc(sizeof(int)*num_img_test);
+for(int i=0;i<num_img_test;i++){
+
+    predictions[i]=Predict_one_image(get_image(i, images_test));
+
+    }
+
+}
+
+
+double score_function(){
+
+double score=0;
+for(int i=0;i<num_img_test;i++){
+if(predictions[i]!=labels_test[i])
+    score++;
+}
+
+return 100*score/((double) num_img_test);
+
+}
+
 
 int main()
 {
@@ -511,26 +541,30 @@ int main()
     get_images(&num_img_test, &images_test_init, &labels_test,
         "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
 
+    image_pp();
+
+    check_images_labels(400, 222);
+
+    
+    init_param();
+    printf(" DONE Initializing W b c d and U\n");
+
+    COD_train();
 
 
 
-    
-    /*printf("%d\n",num_img_train);
-    int sample = 1000;
-    
-    printf("sample label %d\n",labels_train[sample]);   
 
-    
-    for (int i = 0; i < 28; i++) {
-        for (int j = 0; j < 28 - 1; j++) {
-            //imageout << (double )(test).images[sample*(28*28)+28*i+j] << " ";
-            printf("%i ",images_train[sample*(28*28)+28*i+j]);
-        }
-        //imageout << (double )(test).images[sample*(28*28)+28*i+27] << endl;
-        printf("%i \n",images_train[sample*(28*28)+28*i+27]);
-    }*/
-    
-    
+
+
+
+
+
+
+
 
     return 0;
 }
+
+
+
+
