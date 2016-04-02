@@ -48,6 +48,18 @@ int ReverseInt (int i)
     return((int) ch1 << 24) + ((int)ch2 << 16) + ((int)ch3 << 8) + ch4;
 }
 
+void image_pp(){
+    
+    for(int i=0; i< num_img_train; i++)
+    {
+        
+        images_train[i]=  (int)images_train[i] <127 ? 0 : 1;
+        
+    }
+    
+    
+}
+
 
 void init_param()
 {
