@@ -30,6 +30,7 @@ double *U;
 
 void gibbs_H(int * h0, int y0, unsigned char *x0);
 int gibbs_Y(int* h0);
+void gibbs_X(unsigned char * x, int * h0);
 
 double uniform()
 {
@@ -178,8 +179,9 @@ void COD_training_update(int yi, unsigned char * xi)
         double sum = c[i];
         for(int j = 0; j< D; j++)
         {
-            sum = sum + W[i*n+j] * (int) x0[j]; 
+            sum = sum + W[i*n+j] * (int) x0[j];
         }
+        
 
         //Can be optimized
         for(int j = 0; j < K; j++)
@@ -195,7 +197,75 @@ void COD_training_update(int yi, unsigned char * xi)
     int * h0 = (int *) malloc(sizeof(int) * n);
     gibbs_H(h0, y0, x0);
     int y1 = gibbs_Y(h0);
+    unsigned char * x1 = (unsigned char *) malloc(sizeof(unsigned char) * D);
+    gibbs_X(x1,h0);
     
+    double * h1_cap = (double *) malloc(sizeof(double) * n);
+    
+    for(int i=0; i<n ;i++)
+    {
+        double sum = c[i];
+        for(int j = 0; j< D; j++)
+        {
+            sum = sum + W[i*n+j] * (int) x1[j];
+        }
+        
+        
+        //Can be optimized
+        for(int j = 0; j < K; j++)
+        {
+            if(j==y1) sum = sum + U[i*n+j];
+        }
+        
+        h1_cap[i] = sigmoid(sum);
+    }
+    
+    //Update Phase
+    
+    //Update W
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0; j<D;j++)
+        {
+            W[i*n+j] = W[i*n+j] + lambda * (h0_cap[i]*x0[j] - h1_cap[i]*x1[j]);
+        }
+    }
+              
+    //Update b
+    for(int i=0;i<D;i++)
+    {
+        b[i] = b[i] + lambda * (x0[i] - x1[i]);
+    }
+    
+    //Update c
+    for(int i=0;i<n;i++)
+    {
+        c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
+    }
+    
+    //Update d
+    for (int i=0; i<K; i++)
+    {
+        if(i==y0)
+            d[i] = d[i] + lambda * (y0);
+        
+        if(i==y1)
+            d[i] = d[i] + lambda * (- y1);
+    }
+    
+    //Update U
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0; j<K;j++)
+        {
+            if(j==y0)
+                U[i*n+j] = U[i*n+j] + lambda * (h0_cap[i]);
+            
+            if(j==y1)
+                U[i*n+j] = U[i*n+j] + lambda * (-h1_cap[i]);
+        }
+    }
+            
 }
 
 /*
@@ -250,7 +320,7 @@ int gibbs_Y(int* h0)
         double val = d[i];
         for(int j=0;j<n;j++)
         {
-            val = val + U[j*n+y] * h0[j];
+            val = val + U[j*n+i] * h0[j];
         }
         y_temp[i] = exp(val);
         sum = sum + y_temp[i];
@@ -264,21 +334,42 @@ int gibbs_Y(int* h0)
     double rand = uniform();
     sum = 0;
     
-    for (<#initialization#>; <#condition#>; <#increment#>) {
-        <#statements#>
+    for(int i=0;i<K;i++)
+    {
+        sum = sum + y_temp[i];
+        if(sum >= rand)
+        {
+            return i;
+        }
     }
-    
-    
-    return 0;
+    return K-1;
 }
 
  /*
  Gibbs samplings for X (image)
  Modifies x
 */
-void gibbs_X(char * x, double * h0)
+void gibbs_X(unsigned char * x, int * h0)
 {
-    
+    for(int i=0; i<D; i++)
+    {
+        double sum = b[i];
+        for(int j=0; j<n ;j++)
+        {
+            sum = sum + W[j*n+i]*h0[j];
+        }
+        
+        double p = sigmoid(sum);
+        double rand = uniform();
+        if(rand>p)
+        {
+            x[i] = '1';
+        }
+        else
+        {
+            x[i] = '0';
+        }
+    }
 }
 
 
