@@ -345,9 +345,6 @@ void COD_train()
         printf("training image %d\n",i+1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
 
-
-        if(i==1000) break;
-
     }
 }
 
@@ -562,7 +559,7 @@ int main()
 
 
 
-    printf("Score: %lf \n",score);
+    printf("Misclassification error: %lf \n",score);
 
 
 
