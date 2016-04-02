@@ -9,13 +9,15 @@
 #define K 10       //Number of classes
 
 //Training Data
-unsigned char *images_train;
+int *images_train;
+unsigned char *images_train_init;
 //Starting Pointer for all Images
 int *labels_train; //labels in the dataset
 int num_img_train; // Number of Images
 
 //Test Data
-unsigned char *images_test;
+int *images_test;
+unsigned char *images_test_init;
 //Starting Pointer for all Images
 int *labels_test; //labels in the dataset
 int num_img_test; // Number of Images
@@ -50,14 +52,25 @@ int ReverseInt (int i)
 
 void image_pp(){
     
+    images_train =(int *)malloc(sizeof(int)*D*num_img_train);
+    images_test =(int *)malloc(sizeof(int)*D*num_img_test);
+
     for(int i=0; i< num_img_train; i++)
     {
         
-        images_train[i]=  (int)images_train[i] <127 ? 0 : 1;
+        images_train[i]=  (int)images_train_init[i] <127 ? 0 : 1;
         
     }
     
     
+        for(int i=0; i< num_img_test; i++)
+    {
+        
+        images_test[i]=  (int)images_test_init[i] <127 ? 0 : 1;
+        
+    }
+
+
 }
 
 
@@ -208,11 +221,11 @@ double sigmoid(double val)
 /*
  Performs next step of training with a new image and it's class
 */
-void COD_training_update(int yi, unsigned char * xi)
+void COD_training_update(int yi, int * xi)
 {
     //Positive Phase
     int y0 = yi;
-    unsigned char * x0 = xi;
+    int * x0 = xi;
     
     double * h0_cap = (double *) malloc(sizeof(double) * n);
 
@@ -221,7 +234,7 @@ void COD_training_update(int yi, unsigned char * xi)
         double sum = c[i];
         for(int j = 0; j< D; j++)
         {
-            sum = sum + W[i*n+j] * (int) x0[j];
+            sum = sum + W[i*n+j] * x0[j];
         }
         
 
@@ -492,8 +505,15 @@ int Predict(unsigned char *x){
 
 int main()
 {
-    get_images(&num_img_train, &images_train, &labels_train,
+    get_images(&num_img_train, &images_train_init, &labels_train,
+        "../MNISTDataSet/train-images-idx3-ubyte", "../MNISTDataSet/train-labels-idx1-ubyte");
+
+    get_images(&num_img_test, &images_test_init, &labels_test,
         "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
+
+
+
+
     
     /*printf("%d\n",num_img_train);
     int sample = 1000;
