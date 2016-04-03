@@ -23,6 +23,10 @@ int *labels_test; //labels in the dataset
 int num_img_test; // Number of Images
 
 
+//Array used for energy calculation
+double * energy_temp = (double *) malloc(sizeof(double)*n);
+
+
 //Predictions
 int *predictions;
 
@@ -342,15 +346,15 @@ double energy(int y, int *x)
 {
     double sum = 0;
     
-    double * temp = (double *) malloc(sizeof(double)*n);
+    //double * energy_temp = (double *) malloc(sizeof(double)*n);
     
     for(int i=0;i<n;i++)
     {
         for(int j=0;j<D;j++)
         {
-            temp[i] = W[i*D+j] * x[i];
+            energy_temp[i] = W[i*D+j] * x[i];
         }
-        sum = sum + temp[i] * h0_cap[i];
+        sum = sum + energy_temp[i] * h0_cap[i];
     }
     
     for(int i=0; i<D ;i++)
@@ -368,8 +372,8 @@ double energy(int y, int *x)
     
     for(int i=0;i<n;i++)
     {
-        temp[i] = U[i*K+y];
-        sum = sum + temp[i] * h0_cap[i];
+        energy_temp[i] = U[i*K+y];
+        sum = sum + energy_temp[i] * h0_cap[i];
     }
     
     return -1*sum;
@@ -395,12 +399,14 @@ void COD_train()
     int i;
     for (i = 0; i < num_img_train; i++)
     {
-
+        //printf("training image %d \n ", i + 1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
          if(i%5000==0)
          {
             //printf("training image %d \n ", i + 1);
+
             printf(" Energy:%lf\n", energy_for_all());
+            
          }
     }
 }
@@ -571,7 +577,7 @@ void predict_images () {
 
     predictions = (int *)malloc(sizeof(int) * num_img_test);
     for (int i = 0; i < num_img_test; i++) {
-        printf("predicting image %d\n", i + 1);
+        //printf("predicting image %d\n", i + 1);
         predictions[i] = Predict_one_image(get_image(i, images_test));
 
     }
