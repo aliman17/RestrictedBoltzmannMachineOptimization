@@ -43,10 +43,9 @@ void check_images_labels(int sample1, int sample2){
 
 
 
-void test_get_img_func(){
+void test_get_img_func(int sample){
 
-   printf("%d\n",num_img_train);
-    int sample = 300;
+  
     
     printf("sample label get image label test %d\n",get_label(sample, labels_train));   
 
