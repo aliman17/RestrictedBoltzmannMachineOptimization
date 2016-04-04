@@ -438,7 +438,7 @@ void gibbs_H(int * h0, int y0, int *x0)
         double sum = c[j] + U[j * K + y0];
         for (int i = 0; i < D; i++)
         {
-            sum = sum + W[j * D + i] * x0[j];
+            sum = sum + W[j * D + i] * x0[i];
         }
 
         double p = sigmoid(sum);
