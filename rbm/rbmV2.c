@@ -8,6 +8,7 @@
 #define lambda 0.005 //Training Rate
 #define K 10       //Number of classes
 
+
 //Training Data
 int *images_train;
 unsigned char *images_train_init;
@@ -39,9 +40,23 @@ double *U;
 double *h0_cap;
 
 
+
+/*
+Definition of useful structure to check gibbs_Y and the prediction routines
+*/
+struct miniarr{
+double mr[K];
+};
+typedef struct miniarr Parr; 
+
+
+
+
 void gibbs_H(int * h0, int y0, int *x0);
 int gibbs_Y(int* h0);
 void gibbs_X(int * x, int * h0);
+
+
 
 double uniform()
 {
@@ -466,15 +481,22 @@ int gibbs_Y(int* h0)
     double rand_n = uniform();
     sum = 0;
 
+
     for (int i = 0; i < K; i++)
     {
         sum = sum + y_temp[i];
         if (sum >= rand_n)
         {
+            free(y_temp);
             return i;
         }
     }
+
+
+    free(y_temp);
     return K - 1;
+
+    
 }
 
 /*
@@ -493,7 +515,7 @@ void gibbs_X(int * x, int * h0)
 
         double p = sigmoid(sum);
         double rand_n = uniform();
-        if (rand_n > p)
+        if (rand_n < p)
         {
             x[i] = 1;
         }
@@ -702,19 +724,52 @@ int main()
     test_init_params(); 
 
     /*
-    test gibbs sampling
+    test gibbs sampling of h
 
     test if given p, the outcome has the right distribution
     does not test yet the correctness of the calculation of p
 
-    from the first result the probabilities seem to be inverted CHECK
+    from the first result the probabilities seem to be inverted in the original implementation.
+
+ 
     */
 
-    test_gibbs_H(0.5);
+    test_gibbs_H(10000);
+
+    /*
+    test gibbs sampling of X
+
+    test if given p, the outcome has the right distribution
+    does not test yet the correctness of the calculation of p
+
+   from the first result the probabilities seem to be inverted in the original implementation.
+
+   
+    */
+    test_gibbs_x(100);
+
+    /*
+    test gibbs sampling of X
+
+    test if given the weigths/bias, the outcome has the right distribution
+    does not test yet the correctness of the calculation of the weights/bias
+
+   from the first result the probabilities seem to be OK
+
+    */
+
+    test_gibbs_Y(1,-100,-100,-100,-100,-100,-100,-100,-100,-100);
+
+    test_gibbs_Y(-100,-100,-100,-100,1,-100,-100,-100,-100,-100);
+
+    test_gibbs_Y(-100,-100,-100,-100,-100,-100,-100,-100,-100,1);
+
+    test_gibbs_Y(1,2,1,2,1,2,1,2,1,2);
 
 
 
-
+    num_img_train=1000;
+    num_img_test=200;
     //read_parameters();
     printf(" DONE Initializing W b c d and U\n");
     fflush(stdout);
@@ -724,8 +779,8 @@ int main()
     COD_train();
     predict_images ();
     double score = score_function();
-    printf("Errors %d %lf \n", T, score);
-    save_parameters ();
+    printf("Errors %d %lf \n", T++, score);
+    //save_parameters ();
 
     }
 
