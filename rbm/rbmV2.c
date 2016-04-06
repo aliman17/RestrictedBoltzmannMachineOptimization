@@ -3,10 +3,14 @@
 #include <stdlib.h>
 
 
-#define D 784      //Dimension
-#define n 6000        //Number of hidden layers
+//#define D 784      //Dimension
+//#define n 6000        //Number of hidden layers
 #define lambda 0.005 //Training Rate
-#define K 10       //Number of classes
+//#define K 10       //Number of classes
+
+const int D = 784;
+const int n = 6000;
+const int K = 10;
 
 
 //Training Data
@@ -248,16 +252,11 @@ double sigmoid(double val)
     return 1.0 / (1.0 + exp(-1.0 * val));
 }
 
-/*
- Performs next step of training with a new image and it's class
-*/
-void COD_training_update(int yi, int * xi) //DONE
-{
-    //Positive Phase
-    int y0 = yi;
-    int * x0 = xi;
 
-    //double * h0_cap = (double *) malloc(sizeof(double) * n);
+/*
+ * Update h0 in positive phase of COD_training_update
+ */
+void h0_cap_update(int y0, int * x0, double * c, double * W, double * U, int n, int D, int K, double * h0_cap){
 
     for (int i = 0; i < n ; i++)
     {
@@ -274,9 +273,22 @@ void COD_training_update(int yi, int * xi) //DONE
             if (j == y0) sum = sum + U[i * K + j];
         }
 
-        h0_cap[i] = sigmoid(sum);
+        h0_cap[i] = (sum); // DO NOT FORGET THE SIGMOID 
     }
 
+}
+
+/*
+ Performs next step of training with a new image and it's class
+*/
+void COD_training_update(int yi, int * xi) //DONE
+{
+    //Positive Phase
+    int y0 = yi;
+    int * x0 = xi;
+
+    //double * h0_cap = (double *) malloc(sizeof(double) * n);
+    h0_cap_update(y0, x0, c, W, U, n, D, K, h0_cap);
 
     //Negative Phase
     int * h0 = (int *) malloc(sizeof(int) * n);
@@ -696,79 +708,24 @@ void read_parameters(){
 
 
 
-#include "testfunctions.h"
+
+//#include "testfunctions.h"
 int main()
 {
+
     get_images(&num_img_train, &images_train_init, &labels_train,
                "../MNISTDataSet/train-images-idx3-ubyte", "../MNISTDataSet/train-labels-idx1-ubyte");
 
     get_images(&num_img_test, &images_test_init, &labels_test,
-               "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
+             "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
 
     image_pp();
 
     check_images_labels(300, 222);
 
     init_param();
-    
 
-
-    /*
-    Test uniform() function
-    */
-  //  test_uniform();
-
-    /*
-    Test init params
-    */
-    //    test_init_params(); 
-
-    /*
-    test gibbs sampling of h
-
-    test if given p, the outcome has the right distribution
-    does not test yet the correctness of the calculation of p
-
-    from the first result the probabilities seem to be inverted in the original implementation.
-
- 
-    */
-
-   test_gibbs_H(0);
-
-  
-    /*
-    test gibbs sampling of X
-
-    test if given p, the outcome has the right distribution
-    does not test yet the correctness of the calculation of p
-
-   from the first result the probabilities seem to be inverted in the original implementation.
-
-   
-    */
-    test_gibbs_x(0.34);
-  
-
-    /*
-    test gibbs sampling of X
-
-    test if given the weigths/bias, the outcome has the right distribution
-    does not test yet the correctness of the calculation of the weights/bias
-
-   from the first result the probabilities seem to be OK
-
-    */
-
-     test_gibbs_Y(1,-100,-100,-100,-100,-100,-100,-100,-100,-100);
-
-     test_gibbs_Y(-100,-100,-100,-100,1,-100,-100,-100,-100,-100);
-
-     test_gibbs_Y(-100,-100,-100,-100,-100,-100,-100,-100,-100,1);
-
-     test_gibbs_Y(1,2,1,2,1,2,1,2,1,2);
-
-  exit(0);
+    //exit(0);
     //num_img_train=1000;
     //num_img_test=200;
     //read_parameters();
@@ -785,12 +742,8 @@ int main()
 
     }
 
-
-
-
     return 0;
 }
-
 
 
 
