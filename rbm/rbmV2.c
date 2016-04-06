@@ -32,11 +32,11 @@ double * energy_temp ;
 int *predictions;
 
 // Training parameters
-double *W;
+double *W; // Number of col= D, rows = n
 double *b;
 double *c;
 double *d;
-double *U;
+double *U; // Number of col= K, rows = n
 double *h0_cap;
 
 
@@ -60,7 +60,7 @@ void gibbs_X(int * x, int * h0);
 
 double uniform()
 {
-    return (double)rand() / (double)(RAND_MAX );
+    return (double)rand() / (double)(RAND_MAX);
 }
 
 
@@ -734,8 +734,9 @@ int main()
  
     */
 
-  //  test_gibbs_H(10000);
+   test_gibbs_H(0);
 
+  
     /*
     test gibbs sampling of X
 
@@ -746,7 +747,8 @@ int main()
 
    
     */
-   // test_gibbs_x(100);
+    test_gibbs_x(0.34);
+  
 
     /*
     test gibbs sampling of X
@@ -758,15 +760,15 @@ int main()
 
     */
 
-    // test_gibbs_Y(1,-100,-100,-100,-100,-100,-100,-100,-100,-100);
+     test_gibbs_Y(1,-100,-100,-100,-100,-100,-100,-100,-100,-100);
 
-    // test_gibbs_Y(-100,-100,-100,-100,1,-100,-100,-100,-100,-100);
+     test_gibbs_Y(-100,-100,-100,-100,1,-100,-100,-100,-100,-100);
 
-    // test_gibbs_Y(-100,-100,-100,-100,-100,-100,-100,-100,-100,1);
+     test_gibbs_Y(-100,-100,-100,-100,-100,-100,-100,-100,-100,1);
 
-    // test_gibbs_Y(1,2,1,2,1,2,1,2,1,2);
+     test_gibbs_Y(1,2,1,2,1,2,1,2,1,2);
 
-
+  exit(0);
     //num_img_train=1000;
     //num_img_test=200;
     //read_parameters();

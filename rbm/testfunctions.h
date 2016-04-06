@@ -23,6 +23,7 @@ init_param();
     }
 
 
+
     double maxW = n < D ? 1.0 / sqrt(D*1.0) : 1.0 / sqrt(n*1.0);
     for (int i = 0 ; i < n * D; i++) {
        if(fabs(W[i])>maxW) {printf ("test failed W\n"); exit(0);}
@@ -184,7 +185,7 @@ counts.mr[gibbs_Y(h0)]+=1;
 
 printf("gibbs_Y testing: \n");
 
-printf("Probs-  expected percentage- actual percentage  \n");
+printf("Probs-  expected number- actual number  \n");
 for(int i=0;i<K;i++){
   printf("%f  %f  %f \n",Probs.mr[i],Probs.mr[i]*numsamples,counts.mr[i]);
 }
