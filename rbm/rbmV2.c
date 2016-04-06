@@ -273,7 +273,7 @@ void h0_cap_update(int y0, int * x0, double * c, double * W, double * U, int n, 
             if (j == y0) sum = sum + U[i * K + j];
         }
 
-        h0_cap[i] = (sum); // DO NOT FORGET THE SIGMOID 
+        h0_cap[i] = sigmoid(sum); // DO NOT FORGET THE SIGMOID 
     }
 
 }
@@ -707,9 +707,9 @@ void read_parameters(){
 }
 
 
-
-
+// NO TESTING HERE
 //#include "testfunctions.h"
+
 int main()
 {
 

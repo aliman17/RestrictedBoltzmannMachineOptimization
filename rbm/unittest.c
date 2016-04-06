@@ -64,7 +64,7 @@ void test_h0_cap_update(){
   for (int y0 = 0; y0 < K; y0++){
     // EXPECTED
     for (int i = 0; i < n; i++){
-      result[i] = (i + i * D + y0);
+      result[i] = sigmoid(i + i * D + y0);
     }
 
     // OUTPUT
