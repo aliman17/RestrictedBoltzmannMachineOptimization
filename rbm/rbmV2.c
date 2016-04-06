@@ -415,9 +415,9 @@ void COD_train()
     int i;
     for (i = 0; i < num_img_train; i++)
     {
-        //printf("training image %d \n ", i + 1);
+        printf("training image %d \n ", i + 1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
-        if(i%500==0)printf("training image %d \n ", i + 1);
+        // if(i%500==0)printf("training image %d \n ", i + 1);
 
          if(i==0)
          {
@@ -716,12 +716,12 @@ int main()
     /*
     Test uniform() function
     */
-    test_uniform();
+  //  test_uniform();
 
     /*
     Test init params
     */
-    test_init_params(); 
+    //    test_init_params(); 
 
     /*
     test gibbs sampling of h
@@ -734,7 +734,7 @@ int main()
  
     */
 
-    test_gibbs_H(10000);
+  //  test_gibbs_H(10000);
 
     /*
     test gibbs sampling of X
@@ -746,7 +746,7 @@ int main()
 
    
     */
-    test_gibbs_x(100);
+   // test_gibbs_x(100);
 
     /*
     test gibbs sampling of X
@@ -758,18 +758,17 @@ int main()
 
     */
 
-    test_gibbs_Y(1,-100,-100,-100,-100,-100,-100,-100,-100,-100);
+    // test_gibbs_Y(1,-100,-100,-100,-100,-100,-100,-100,-100,-100);
 
-    test_gibbs_Y(-100,-100,-100,-100,1,-100,-100,-100,-100,-100);
+    // test_gibbs_Y(-100,-100,-100,-100,1,-100,-100,-100,-100,-100);
 
-    test_gibbs_Y(-100,-100,-100,-100,-100,-100,-100,-100,-100,1);
+    // test_gibbs_Y(-100,-100,-100,-100,-100,-100,-100,-100,-100,1);
 
-    test_gibbs_Y(1,2,1,2,1,2,1,2,1,2);
+    // test_gibbs_Y(1,2,1,2,1,2,1,2,1,2);
 
 
-
-    num_img_train=1000;
-    num_img_test=200;
+    //num_img_train=1000;
+    //num_img_test=200;
     //read_parameters();
     printf(" DONE Initializing W b c d and U\n");
     fflush(stdout);
