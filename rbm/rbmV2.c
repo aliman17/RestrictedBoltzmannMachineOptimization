@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <test_param_prabhu.h> 
 
 //RANDOM LINE ADDED
 
@@ -315,7 +314,7 @@ void d_update(double * d, int y0, int y1, double lambda, int K){
             d[i] = d[i] + lambda;
 
         if (i == y1)
-            d[i] = d[i] + lambda * (- 1);
+            d[i] = d[i] - lambda;
     }
 }
 
