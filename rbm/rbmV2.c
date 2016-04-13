@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 
+//RANDOM LINE ADDED
+
 //#define D 784      //Dimension
 //#define n 6000        //Number of hidden layers
 #define lambda 0.005 //Training Rate
