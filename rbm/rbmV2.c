@@ -66,7 +66,7 @@ void gibbs_X(int * x, int * h0);
 
 double uniform()
 {
-    return (double)rand() / (double)(RAND_MAX+1);
+    return (double)rand() / (double)(RAND_MAX);
 }
 
 
