@@ -5,12 +5,13 @@
 
 //#define D 784      //Dimension
 //#define n 6000        //Number of hidden layers
-#define lambda 0.005 //Training Rate
+//#define lambda 0.005 //Training Rate
 //#define K 10       //Number of classes
 
 const int D = 784;
 const int n = 6000;
 const int K = 10;
+const double lambda = 0.005;
 
 
 //Training Data
@@ -253,10 +254,12 @@ double sigmoid(double val)
 }
 
 
+
 /*
- * Update h0 in positive phase of COD_training_update
+ * This function if more general then the previous one for h0_cap
+ * h <- sigmoid( c + Wx + Uy )
  */
-void h0_cap_update(int y0, int * x0, double * c, double * W, double * U, int n, int D, int K, double * h0_cap){
+void h_update(double * h, int y0, int * x0, double * c, double * W, double * U, int n, int D, int K){
 
     for (int i = 0; i < n ; i++)
     {
@@ -273,10 +276,11 @@ void h0_cap_update(int y0, int * x0, double * c, double * W, double * U, int n, 
             if (j == y0) sum = sum + U[i * K + j];
         }
 
-        h0_cap[i] = sigmoid(sum); // DO NOT FORGET THE SIGMOID 
+        h[i] = sigmoid(sum);
     }
 
 }
+
 
 /*
  Performs next step of training with a new image and it's class
@@ -288,34 +292,23 @@ void COD_training_update(int yi, int * xi) //DONE
     int * x0 = xi;
 
     //double * h0_cap = (double *) malloc(sizeof(double) * n);
-    h0_cap_update(y0, x0, c, W, U, n, D, K, h0_cap);
+    
+    // Here we update h0_cap <- sigmoid( c + Wx0 + Uy0 )
+    h_update(h0_cap, y0, x0, c, W, U, n, D, K);
 
     //Negative Phase
     int * h0 = (int *) malloc(sizeof(int) * n);
-    gibbs_H(h0, y0, x0);
-    int y1 = gibbs_Y(h0);
     int * x1 = (int *) malloc(sizeof(int) * D);
-    gibbs_X(x1, h0);
-
     double * h1_cap = (double *) malloc(sizeof(double) * n);
 
-    for (int i = 0; i < n ; i++)
-    {
-        double sum = c[i];
-        for (int j = 0; j < D; j++)
-        {
-            sum = sum + W[i * D + j] *  x1[j];
-        }
+    // Compute Gibbs samplings for h0, y1 and x1
+    gibbs_H(h0, y0, x0);
+    int y1 = gibbs_Y(h0);
+    gibbs_X(x1, h0);
 
-
-        //Can be optimized
-        for (int j = 0; j < K; j++)
-        {
-            if (j == y1) sum = sum + U[i * K + j];
-        }
-
-        h1_cap[i] = sigmoid(sum);
-    }
+    
+    // Here we update h1_cap <- sigmoid( c + Wx1 + Uy1 )
+    h_update(h1_cap, y1, x1, c, W, U, n, D, K);
 
     //Update Phase 
 
