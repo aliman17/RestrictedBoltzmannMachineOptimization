@@ -1,7 +1,7 @@
 #include "rbmV2.c"
 
 
-void test_h0_cap_update(){
+void test_h_update(){
 
   double precision = 0.0001;
 
@@ -68,7 +68,7 @@ void test_h0_cap_update(){
     }
 
     // OUTPUT
-    h0_cap_update(y0, x0, c, W, U, n, D, K, h0_cap);
+    h_update(h0_cap, y0, x0, c, W, U, n, D, K);
     
     // COMPARE
     double diff = 0;
@@ -298,7 +298,7 @@ for(int i=0;i<K;i++){
 
 int main(){
   
-  test_h0_cap_update();
+  test_h_update();
 
   // THE REST IS HERE
 

@@ -7,12 +7,13 @@
 
 //#define D 784      //Dimension
 //#define n 6000        //Number of hidden layers
-#define lambda 0.005 //Training Rate
+//#define lambda 0.005 //Training Rate
 //#define K 10       //Number of classes
 
 const int D = 784;
 const int n = 6000;
 const int K = 10;
+const double lambda = 0.005;
 
 
 //Training Data
@@ -255,10 +256,12 @@ double sigmoid(double val)
 }
 
 
+
 /*
- * Update h0 in positive phase of COD_training_update
+ * This function if more general then the previous one for h0_cap
+ * h <- sigmoid( c + Wx + Uy )
  */
-void h0_cap_update(int y0, int * x0, double * c, double * W, double * U, int n, int D, int K, double * h0_cap){
+void h_update(double * h, int y0, int * x0, double * c, double * W, double * U, int n, int D, int K){
 
     for (int i = 0; i < n ; i++)
     {
@@ -275,53 +278,13 @@ void h0_cap_update(int y0, int * x0, double * c, double * W, double * U, int n, 
             if (j == y0) sum = sum + U[i * K + j];
         }
 
-        h0_cap[i] = sigmoid(sum); // DO NOT FORGET THE SIGMOID 
+        h[i] = sigmoid(sum);
     }
 
 }
 
-/*
- Performs next step of training with a new image and it's class
-*/
-void COD_training_update(int yi, int * xi) //DONE
-{
-    //Positive Phase
-    int y0 = yi;
-    int * x0 = xi;
 
-    //double * h0_cap = (double *) malloc(sizeof(double) * n);
-    h0_cap_update(y0, x0, c, W, U, n, D, K, h0_cap);
-
-    //Negative Phase
-    int * h0 = (int *) malloc(sizeof(int) * n);
-    gibbs_H(h0, y0, x0);
-    int y1 = gibbs_Y(h0);
-    int * x1 = (int *) malloc(sizeof(int) * D);
-    gibbs_X(x1, h0);
-
-    double * h1_cap = (double *) malloc(sizeof(double) * n);
-
-    for (int i = 0; i < n ; i++)
-    {
-        double sum = c[i];
-        for (int j = 0; j < D; j++)
-        {
-            sum = sum + W[i * D + j] *  x1[j];
-        }
-
-
-        //Can be optimized
-        for (int j = 0; j < K; j++)
-        {
-            if (j == y1) sum = sum + U[i * K + j];
-        }
-
-        h1_cap[i] = sigmoid(sum);
-    }
-
-    //Update Phase 
-
-    //Update W
+void W_update(double * W, double * h0_cap, double * h1_cap, int * x0, int * x1, double lambda, int n, int D){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < D; j++)
@@ -329,20 +292,23 @@ void COD_training_update(int yi, int * xi) //DONE
             W[i * D + j] = W[i * D + j] + lambda * (h0_cap[i] * x0[j] - h1_cap[i] * x1[j]);
         }
     }
+}
 
-    //Update b
+void b_update(double * b, int * x0, int * x1, double lambda, int D){
     for (int i = 0; i < D; i++)
     {
         b[i] = b[i] + lambda * (x0[i] - x1[i]);
     }
+}
 
-    //Update c
+void c_update(double * c, double * h0_cap, double * h1_cap, double lambda, int n){
     for (int i = 0; i < n; i++)
     {
         c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
     }
+}
 
-    //Update d
+void d_update(double * d, int y0, int y1, double lambda, int K){
     for (int i = 0; i < K; i++)
     {
         if (i == y0)
@@ -351,8 +317,9 @@ void COD_training_update(int yi, int * xi) //DONE
         if (i == y1)
             d[i] = d[i] + lambda * (- 1);
     }
+}
 
-    //Update U
+void U_update(double * U, double * h0_cap, double * h1_cap, int y0, int y1, double lambda, int n, int K){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < K; j++)
@@ -364,6 +331,43 @@ void COD_training_update(int yi, int * xi) //DONE
                 U[i * K + j] = U[i * K + j] + lambda * (-h1_cap[i]);
         }
     }
+}
+
+
+/*
+ Performs next step of training with a new image and it's class
+*/
+void COD_training_update(int yi, int * xi) //DONE
+{
+    //Positive Phase
+    int y0 = yi;
+    int * x0 = xi;
+
+    //double * h0_cap = (double *) malloc(sizeof(double) * n);
+    
+    // Here we update h0_cap <- sigmoid( c + Wx0 + Uy0 )
+    h_update(h0_cap, y0, x0, c, W, U, n, D, K);
+
+    //Negative Phase
+    int * h0 = (int *) malloc(sizeof(int) * n);
+    int * x1 = (int *) malloc(sizeof(int) * D);
+    double * h1_cap = (double *) malloc(sizeof(double) * n);
+
+    // Compute Gibbs samplings for h0, y1 and x1
+    gibbs_H(h0, y0, x0);
+    int y1 = gibbs_Y(h0);
+    gibbs_X(x1, h0);
+
+    
+    // Here we update h1_cap <- sigmoid( c + Wx1 + Uy1 )
+    h_update(h1_cap, y1, x1, c, W, U, n, D, K);
+
+    //Update Phase 
+    W_update(W, h0_cap, h1_cap, x0, x1, lambda, n, D);
+    b_update(b, x0, x1, lambda, n);
+    c_update(c, h0_cap, h1_cap, lambda, n);
+    d_update(d, y0, y1, lambda, K);
+    U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
 
     //free(h0_cap);
     free(h1_cap);
@@ -711,7 +715,7 @@ void read_parameters(){
 
 // NO TESTING HERE
 //#include "testfunctions.h"
-
+/*
 int main()
 {
 
@@ -747,5 +751,5 @@ int main()
     return 0;
 }
 
-
+*/
 
