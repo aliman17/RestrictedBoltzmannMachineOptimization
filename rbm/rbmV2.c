@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-
+#include <test_param_prabhu.h> 
 
 //#define D 784      //Dimension
 //#define n 6000        //Number of hidden layers
