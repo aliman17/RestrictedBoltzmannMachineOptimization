@@ -1,3 +1,4 @@
+#define UNITTEST_MODE
 #include "rbmV2.c"
 
 
@@ -136,6 +137,10 @@ init_param();
   printf ("Init params test succeeded \n");
 
 
+
+}
+
+void testWupdate(){
 
 }
 

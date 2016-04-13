@@ -712,10 +712,8 @@ void read_parameters(){
 
 }
 
+#ifndef UNITTEST_MODE
 
-// NO TESTING HERE
-//#include "testfunctions.h"
-/*
 int main()
 {
 
@@ -751,5 +749,4 @@ int main()
     return 0;
 }
 
-*/
-
+#endif
