@@ -282,6 +282,56 @@ void h_update(double * h, int y0, int * x0, double * c, double * W, double * U, 
 }
 
 
+void W_update(double * W, double * h0_cap, double * h1_cap, int * x0, int * x1, double lambda, int n, int D){
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < D; j++)
+        {
+            W[i * D + j] = W[i * D + j] + lambda * (h0_cap[i] * x0[j] - h1_cap[i] * x1[j]);
+        }
+    }
+}
+
+void b_update(double * b, int * x0, int * x1, double lambda, int D){
+    for (int i = 0; i < D; i++)
+    {
+        b[i] = b[i] + lambda * (x0[i] - x1[i]);
+    }
+}
+
+void c_update(double * c, double * h0_cap, double * h1_cap, double lambda, int n){
+    for (int i = 0; i < n; i++)
+    {
+        c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
+    }
+}
+
+void d_update(double * d, int y0, int y1, double lambda, int K){
+    for (int i = 0; i < K; i++)
+    {
+        if (i == y0)
+            d[i] = d[i] + lambda;
+
+        if (i == y1)
+            d[i] = d[i] + lambda * (- 1);
+    }
+}
+
+void U_update(double * U, double * h0_cap, double * h1_cap, int y0, int y1, double lambda, int n, int K){
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < K; j++)
+        {
+            if (j == y0)
+                U[i * K + j] = U[i * K + j] + lambda * (h0_cap[i]);
+
+            if (j == y1)
+                U[i * K + j] = U[i * K + j] + lambda * (-h1_cap[i]);
+        }
+    }
+}
+
+
 /*
  Performs next step of training with a new image and it's class
 */
@@ -311,50 +361,11 @@ void COD_training_update(int yi, int * xi) //DONE
     h_update(h1_cap, y1, x1, c, W, U, n, D, K);
 
     //Update Phase 
-
-    //Update W
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < D; j++)
-        {
-            W[i * D + j] = W[i * D + j] + lambda * (h0_cap[i] * x0[j] - h1_cap[i] * x1[j]);
-        }
-    }
-
-    //Update b
-    for (int i = 0; i < D; i++)
-    {
-        b[i] = b[i] + lambda * (x0[i] - x1[i]);
-    }
-
-    //Update c
-    for (int i = 0; i < n; i++)
-    {
-        c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
-    }
-
-    //Update d
-    for (int i = 0; i < K; i++)
-    {
-        if (i == y0)
-            d[i] = d[i] + lambda;
-
-        if (i == y1)
-            d[i] = d[i] + lambda * (- 1);
-    }
-
-    //Update U
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < K; j++)
-        {
-            if (j == y0)
-                U[i * K + j] = U[i * K + j] + lambda * (h0_cap[i]);
-
-            if (j == y1)
-                U[i * K + j] = U[i * K + j] + lambda * (-h1_cap[i]);
-        }
-    }
+    W_update(W, h0_cap, h1_cap, x0, x1, lambda, n, D);
+    b_update(b, x0, x1, lambda, n);
+    c_update(c, h0_cap, h1_cap, lambda, n);
+    d_update(d, y0, y1, lambda, K);
+    U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
 
     //free(h0_cap);
     free(h1_cap);
@@ -702,7 +713,7 @@ void read_parameters(){
 
 // NO TESTING HERE
 //#include "testfunctions.h"
-
+/*
 int main()
 {
 
@@ -738,5 +749,5 @@ int main()
     return 0;
 }
 
-
+*/
 
