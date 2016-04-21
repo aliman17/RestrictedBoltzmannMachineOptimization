@@ -29,11 +29,6 @@ unsigned char *images_test_init;
 int *labels_test; //labels in the dataset
 int num_img_test; // Number of Images
 
-
-//Array used for energy calculation
-double * energy_temp ;
-
-
 //Predictions
 int *predictions;
 
@@ -57,11 +52,10 @@ typedef struct miniarr Parr;
 
 
 
-
+double energy_for_all();
 void gibbs_H(int * h0, int y0, int *x0);
-int gibbs_Y(int* h0);
-void gibbs_X(int * x, int * h0);
-
+int gibbs_Y_(int* h0, double * U, double * d, int K, int n);
+void gibbs_X_(int * x, int * h0, double * W, int D, int n);
 
 
 double uniform()
@@ -86,20 +80,11 @@ void image_pp() {
     images_test = (int *)malloc(sizeof(int) * D * num_img_test);
 
     for (int i = 0; i < num_img_train * D; i++)
-    {
-
         images_train[i] =  (int)images_train_init[i] < 127 ? 0 : 1;
-
-    }
 
 
     for (int i = 0; i < num_img_test * D; i++)
-    {
-
         images_test[i] =  (int)images_test_init[i] < 127 ? 0 : 1;
-
-    }
-
 
 }
 
@@ -112,7 +97,6 @@ void init_param()
     d = (double *) malloc(K * sizeof(double));
     U = (double *) malloc(n * K * sizeof(double));
     h0_cap = (double *) malloc(sizeof(double) * n);
-    energy_temp = (double *) malloc(sizeof(double)*n);
 
     //The biases b ,c ,d are initiallez to zero
 
@@ -340,7 +324,9 @@ void U_update(double * U, double * h0_cap, double * h1_cap,
 /*
  Performs next step of training with a new image and it's class
 */
-void COD_training_update(int yi, int * xi) //DONE
+void COD_training_update(int yi, int * xi, double * h0_cap,
+                        double * b, double * c, double * d, 
+                        double * U, double * W, int n, int D, int K) //DONE
 {
     //Positive Phase
     int y0 = yi;
@@ -358,8 +344,8 @@ void COD_training_update(int yi, int * xi) //DONE
 
     // Compute Gibbs samplings for h0, y1 and x1
     gibbs_H(h0, y0, x0);
-    int y1 = gibbs_Y(h0);
-    gibbs_X(x1, h0);
+    int y1 = gibbs_Y_(h0, U, d, K, n);
+    gibbs_X_(x1, h0, W, D, n);
 
     
     // Here we update h1_cap <- sigmoid( c + Wx1 + Uy1 )
@@ -377,6 +363,29 @@ void COD_training_update(int yi, int * xi) //DONE
     free(x1);
     free(h0);
 
+}
+
+/*
+ Runs CODTrainingUpdate over all images and trains the model
+*/
+void COD_train()
+{
+    int i;
+    for (i = 0; i < num_img_train; i++)
+    {
+        //printf("training image %d \n ", i + 1);
+        COD_training_update(get_label(i, labels_train), get_image(i, images_train),
+                        h0_cap,
+                        b, c, d, 
+                        U, W, n, D, K);
+        // if(i%500==0)printf("training image %d \n ", i + 1);
+
+         if(i==0)
+         {
+           printf(" Energy:%lf\n", energy_for_all());
+           //fflush(stdout);
+         }
+    }
 }
 
 double energy(int y, int *x, double * h, double * W, 
@@ -441,25 +450,7 @@ double energy_for_all()
 
     return sum;
 }
-/*
- Runs CODTrainingUpdate over all images and trains the model
-*/
-void COD_train()
-{
-    int i;
-    for (i = 0; i < num_img_train; i++)
-    {
-        //printf("training image %d \n ", i + 1);
-        COD_training_update(get_label(i, labels_train), get_image(i, images_train));
-        // if(i%500==0)printf("training image %d \n ", i + 1);
 
-         if(i==0)
-         {
-           printf(" Energy:%lf\n", energy_for_all());
-           //fflush(stdout);
-         }
-    }
-}
 
 /*
  Gibbs samplings for H (hidden nodes)
@@ -492,7 +483,7 @@ void gibbs_H(int * h0, int y0, int *x0)
 Gibbs samplings for Y (label)
 Returns value for Y
 */
-int gibbs_Y(int* h0)
+int gibbs_Y_(int* h0, double * U, double * d, int K, int n)
 {
     double sum = 0;
     double *y_temp = (double *) malloc(sizeof(double) * K);
@@ -533,11 +524,12 @@ int gibbs_Y(int* h0)
     
 }
 
+
 /*
 Gibbs samplings for X (image)
 Modifies x
 */
-void gibbs_X(int * x, int * h0)
+void gibbs_X_(int * x, int * h0, double * W, int D, int n)
 {
     for (int i = 0; i < D; i++)
     {
@@ -559,6 +551,7 @@ void gibbs_X(int * x, int * h0)
         }
     }
 }
+
 
 int Predict_one_image(int *x) {
 
@@ -728,21 +721,21 @@ void read_parameters(){
 
 }
 
-
 #ifndef UNITTEST_MODE
 
 int main()
 {
-
+    srand(1);
     get_images(&num_img_train, &images_train_init, &labels_train,
                "../MNISTDataSet/train-images-idx3-ubyte", "../MNISTDataSet/train-labels-idx1-ubyte");
 
+    num_img_train = 1000;  // REMOVE
     get_images(&num_img_test, &images_test_init, &labels_test,
              "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
-
+    num_img_test = 100; // REMOVE
     image_pp();
 
-    check_images_labels(300, 222);
+    //check_images_labels(300, 222); // PROBLEM, doesn't work
 
     init_param();
 
