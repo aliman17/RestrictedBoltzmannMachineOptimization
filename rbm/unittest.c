@@ -272,10 +272,37 @@ void test_uniform(){
 }
 
 
+void test_energy(){
+  // Given
+  const int n = 2;
+  const int D = 4;
+  const int K = 3;
+
+  double h[n] = {1, 2};
+  double W[n*D] = {1,2,3,4,0,1,2,3};
+  int x[D] = {0,1,1,0};
+  double b[D] = {0,1,1,1};
+  double c[n] = {2,3};
+  double d[K] = {0,0,1};
+  int y[K] = {0,0,1};
+  double U[n*K] = {1,1,1,2,2,2};
+
+  // Expected
+  double expected = -27;
+
+  // Compute
+  double result = energy_t(2, x, h, W, b, c, d, U, n, D, K);
+
+  // Compare
+  if (expected == result)
+    printf("OK: energy\n");
+  else
+    printf("FAILED: energy: (expected, computed) %f  %f\n", expected, result);
+}
 
 void test_init_params(){
 
-init_param();   
+  init_param();   
 
 
     for (int i = 0; i < D; i++) {
@@ -474,7 +501,7 @@ int main(){
   test_c_update();
   test_U_update();
 
-
+  test_energy();
 
 
 test_gibbs_H_helper(-1000);

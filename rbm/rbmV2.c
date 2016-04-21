@@ -150,7 +150,8 @@ void init_param()
  Load all images into memory
  Returns pointer to the first image
 */
-void get_images(int *_num_img, unsigned char **_images, int **_labels, char *imagesFileName, char *labelsFileName)
+void get_images(int *_num_img, unsigned char **_images, 
+                int **_labels, char *imagesFileName, char *labelsFileName)
 {
     int num_img;
     unsigned char *images;
@@ -260,7 +261,8 @@ double sigmoid(double val)
  * This function if more general then the previous one for h0_cap
  * h <- sigmoid( c + Wx + Uy )
  */
-void h_update(double * h, int y0, int * x0, double * c, double * W, double * U, int n, int D, int K){
+void h_update(double * h, int y0, int * x0, double * c, 
+              double * W, double * U, int n, int D, int K){
 
     for (int i = 0; i < n ; i++)
     {
@@ -283,7 +285,8 @@ void h_update(double * h, int y0, int * x0, double * c, double * W, double * U, 
 }
 
 
-void W_update(double * W, double * h0_cap, double * h1_cap, int * x0, int * x1, double lambda, int n, int D){
+void W_update(double * W, double * h0_cap, double * h1_cap, 
+              int * x0, int * x1, double lambda, int n, int D){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < D; j++)
@@ -318,7 +321,8 @@ void d_update(double * d, int y0, int y1, double lambda, int K){
     }
 }
 
-void U_update(double * U, double * h0_cap, double * h1_cap, int y0, int y1, double lambda, int n, int K){
+void U_update(double * U, double * h0_cap, double * h1_cap, 
+              int y0, int y1, double lambda, int n, int K){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < K; j++)
@@ -375,42 +379,51 @@ void COD_training_update(int yi, int * xi) //DONE
 
 }
 
-double energy(int y, int *x)
+double energy(int y, int *x, double * h, double * W, 
+                double * b, double * c, double * d, double * U, 
+                int n, int D, int K)
 {
     double sum = 0;
-    
-    //double * energy_temp = (double *) malloc(sizeof(double)*n);
-    
+    double tmp;
+
+
+    // sum += h'Wx
     for(int i=0;i<n;i++)
     {
+        // Matrix line with vector multiplication
+        tmp = 0;
         for(int j=0;j<D;j++)
         {
-            energy_temp[i] = W[i*D+j] * x[i];
+            tmp += W[i*D+j] * x[j];
         }
-        sum = sum + energy_temp[i] * h0_cap[i];
+
+        sum += tmp * h[i];
     }
-    
+
+    // sum += b'x 
     for(int i=0; i<D ;i++)
     {
-        sum = sum + b[i] * x[i];
+        sum += b[i] * x[i];
     }
     
+    // sum += c'h
     for(int i=0; i<n;i++)
     {
-        sum = sum + c[i] * h0_cap[i];
+        sum += c[i] * h[i];
     }
     
-    sum = sum + d[y];
+    // sum += d'y
+    sum += d[y];
     
-    
+    // sum += h'Uy
     for(int i=0;i<n;i++)
     {
-        energy_temp[i] = U[i*K+y];
-        sum = sum + energy_temp[i] * h0_cap[i];
+        sum += U[i*K+y] * h[i];
     }
     
-    return -1*sum;
+    return -sum;
 }
+
 
 double energy_for_all()
 {
@@ -419,7 +432,11 @@ double energy_for_all()
     for(int k=0; k<num_img_train ; k++)
     {
         //printf("energy image %d \n ", k);
-        sum = sum + energy(get_label(k, labels_train), get_image(k, images_train));
+
+        double e = energy(get_label(k, labels_train), get_image(k, images_train), 
+                h0_cap, W, b, c, d, U, n, D, K);
+
+        sum += e;
     }
 
     return sum;
@@ -432,7 +449,7 @@ void COD_train()
     int i;
     for (i = 0; i < num_img_train; i++)
     {
-        printf("training image %d \n ", i + 1);
+        //printf("training image %d \n ", i + 1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
         // if(i%500==0)printf("training image %d \n ", i + 1);
 
@@ -735,12 +752,13 @@ int main()
     printf(" DONE Initializing W b c d and U\n");
     fflush(stdout);
     int T=0;
+
     while(1){
     //printf("Traing time %d \n",T++);
     COD_train();
     predict_images ();
     double score = score_function();
-    printf("Errors %d %lf \n", T++, score);
+    printf("                                     Errors %d %lf \n", T++, score);
     //save_parameters ();
 
     }
