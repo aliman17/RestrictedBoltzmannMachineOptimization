@@ -738,10 +738,10 @@ int main()
     get_images(&num_img_train, &images_train_init, &labels_train,
                "../MNISTDataSet/train-images-idx3-ubyte", "../MNISTDataSet/train-labels-idx1-ubyte");
 
-    num_img_train = 200;  // REMOVE
+    num_img_train = 2000;  // REMOVE
     get_images(&num_img_test, &images_test_init, &labels_test,
              "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
-    num_img_test = 100; // REMOVE
+    num_img_test = 200; // REMOVE
     image_pp();
 
     //check_images_labels(300, 222); // PROBLEM, doesn't work
