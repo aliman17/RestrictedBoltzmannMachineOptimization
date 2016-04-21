@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <test_param_prabhu.h> 
 
 //RANDOM LINE ADDED
 
@@ -711,6 +710,7 @@ void read_parameters(){
 
 
 }
+
 
 #ifndef UNITTEST_MODE
 
