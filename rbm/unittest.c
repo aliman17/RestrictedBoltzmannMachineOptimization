@@ -85,7 +85,7 @@ void test_h_update(){
   }
 
   if (isOK)
-    printf("OK\n");
+    printf("OK: h_update\n");
 
   free(x0);
   free(W);
@@ -93,6 +93,176 @@ void test_h_update(){
   free(U);
   free(h0_cap);
   free(result);
+}
+
+void test_d_update(){
+  const int d_size = 10;
+
+  // Initialize d to zeros
+  double * d = (double *) calloc(d_size, sizeof(double));  
+
+  int y0 = 3;
+  int y1 = 4;
+  double lambda = 0.5;
+  int K = 10; // num of classes
+  double d_expected[d_size] = {0, 0, 0, lambda, -lambda, 0, 0, 0, 0, 0};
+
+  // Compute
+  d_update(d, y0, y1, lambda, K);
+
+  // Compare
+  for (int i = 0; i < K; i++){
+    if (d[i] != d_expected[i]){
+      printf("FAILURE: d_update\n");
+      return;
+    }
+  }
+
+  printf("OK: d_update\n");
+}
+
+void test_W_update(){
+
+  const int n = 3;
+  const int D = 4;
+  double lambda = 1;
+
+
+  double * W = (double *) calloc(n * D, sizeof(double));
+  double h0_cap[n] = {1, 2, 3};
+  double h1_cap[n] = {-2, 0, -1};
+  int x0[D] = {1, 2, 3, 4};
+  int x1[D] = {-4, 3, -2, 1};
+
+  double W_expected[n*D] = {-7, 8, -1, 6, 
+                             2, 4, 6, 8, 
+                            -1, 9, 7, 13};
+
+  // COMPUTE
+  W_update(W, h0_cap, h1_cap, x0, x1, lambda, n, D);
+
+  // COMPARE
+  for (int i = 0; i < n*D; i++){
+    if (W[i] != W_expected[i]){
+      printf("FAILURE: W_update\n");
+      printf("Expected\n");
+      for (int k = 0; k < n; k++){
+        for (int j = 0; j<D; j++){
+          printf("%f   ", W_expected[k*D + j]);
+        }
+        printf("\n");
+      }
+
+      printf("Computed\n");
+      for (int k = 0; k < n; k++){
+        for (int j = 0; j<D; j++){
+          printf("%f   ", W[k*D + j]);
+        }
+        printf("\n");
+      }
+      return;
+    }
+  }
+
+  printf("OK: W_update\n");
+}
+
+void test_b_update(){
+  // GIVED
+  const int D = 4;
+  double * b = (double *) calloc (D, sizeof(double));
+  int x0[D] = {1,1,1,1};
+  int x1[D] = {2,2,2,2};
+  double lambda = 1;
+
+  // EXPECTED
+  double b_expected[D] = {-1, -1, -1, -1};
+
+  // COMPUTED
+  b_update(b, x0, x1, lambda, D);
+
+  // COMPARE
+  for (int i = 0; i < D; i++){
+    if (b[i] != b_expected[i]){
+      printf("FAILURE: b_update\n");
+      return;
+    }
+  }
+
+  printf("OK: b_update\n");
+}
+
+
+void test_c_update(){
+  // GIVED
+  const int D = 4;
+  double * c = (double *) calloc (D, sizeof(double));
+  double h0[D] = {1,1,1,1};
+  double h1[D] = {2,2,2,2};
+  double lambda = 1;
+
+  // EXPECTED
+  double c_expected[D] = {-1, -1, -1, -1};
+
+  // COMPUTED
+  c_update(c, h0, h1, lambda, D);
+
+  // COMPARE
+  for (int i = 0; i < D; i++){
+    if (c[i] != c_expected[i]){
+      printf("FAILURE: c_update\n");
+      return;
+    }
+  }
+
+  printf("OK: c_update\n");
+}
+
+
+void test_U_update(){
+  // GIVEN
+  const int K = 10;
+  const int n = 4;
+  double * U = (double *) calloc (n*K, sizeof(double));
+  double h0_cap[n] = {1, 2, 3, 4};
+  double h1_cap[n] = {2, 2, 2, 2};
+  int y0 = 3;
+  int y1 = 7;
+  double lambda = 1;
+
+  // EXPECTED
+  double U_expected[n*K] = {0, 0, 0, 1, 0, 0, 0, -2, 0, 0,
+                            0, 0, 0, 2, 0, 0, 0, -2, 0, 0,
+                            0, 0, 0, 3, 0, 0, 0, -2, 0, 0,
+                            0, 0, 0, 4, 0, 0, 0, -2, 0, 0};
+
+  // COMPUTED
+  U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
+
+  // COMPARE
+  for (int i = 0; i < n*K; i++){
+    if (U[i] != U_expected[i]){
+      printf("FAILURE: U_update\n");
+      printf("Expected\n");
+      for (int k = 0; k < n; k++){
+        for (int j = 0; j<K; j++){
+          printf("%f   ", U_expected[k*K + j]);
+        }
+        printf("\n");
+      }
+
+      printf("Computed\n");
+      for (int k = 0; k < n; k++){
+        for (int j = 0; j<K; j++){
+          printf("%f   ", U[k*K + j]);
+        }
+        printf("\n");
+      }
+      return;
+    }
+  }
+
+  printf("OK: U_update\n");
 }
 
 
@@ -132,61 +302,55 @@ init_param();
      for (int i = 0 ; i < n * K; i++) {
         if(fabs(U[i])>maxU) {printf ("test failed U \n"); exit(0);}
     }
-
-
   printf ("Init params test succeeded \n");
-
-
-
 }
 
-void testWupdate(){
+// void test_gibbs_H(){
 
-}
+// }
 
 
-
-void test_gibbs_H(double param)
+void test_gibbs_H_helper(double param)
 {
+    init_param();
+  /*
+  test if given p, the outcome has the right distribution
+  does not test yet the correctness of the calculation of p
+  */
+  srand(10);
+  // double param=100000;
 
-/*
-test if given p, the outcome has the right distribution
-does not test yet the correctness of the calculation of p
-*/
-srand(10);
-// double param=100000;
-
-for (int i = 0 ; i < n * K; i++) {
-        U[i]=0;
+  for (int i = 0 ; i < n * K; i++) {
+          U[i]=0;
+      }
+  for (int i = 0 ; i < n * D; i++) {
+        W[i]=0;
     }
-for (int i = 0 ; i < n * D; i++) {
-      W[i]=0;
+
+  for (int i = 0 ; i < n ; i++) {
+        c[i]=param;
+    }
+
+
+
+  int *x0 = (int *) malloc(sizeof(int)*D);
+    for(int i=0; i<D; i++){
+
+      x0[i]=0;
+    }
+
+  int * h0 = (int *) malloc(sizeof(int) * n);
+
+  gibbs_H(h0,0,x0);
+
+  double count=0;
+
+  for(int i=0; i<n; i++)
+  {
+  if(h0[i]==1) count++;
   }
 
-for (int i = 0 ; i < n ; i++) {
-      c[i]=param;
-  }
-
-
-
-int *x0 = (int *) malloc(sizeof(int)*D);
-  for(int i=0; i<D; i++){
-
-    x0[i]=0;
-  }
-
-int * h0 = (int *) malloc(sizeof(int) * n);
-
-gibbs_H(h0,0,x0);
-
-double count=0;
-
-for(int i=0; i<n; i++)
-{
-if(h0[i]==1) count++;
-}
-
-printf("gibbs_H: Prob %f, expected percentage  p*n %f, actual percentage %f\n",sigmoid(c[0]), sigmoid(param)*n, count );
+  printf("gibbs_H: Prob %f, expected percentage  p*n %f, actual percentage %f\n",sigmoid(c[0]), sigmoid(param)*n, count );
 
  free(h0);
  free(x0);
@@ -304,9 +468,19 @@ for(int i=0;i<K;i++){
 int main(){
   
   test_h_update();
+  test_d_update();
+  test_W_update();
+  test_b_update();
+  test_c_update();
+  test_U_update();
+
+
+
+
+test_gibbs_H_helper(-1000);
 
   // THE REST IS HERE
-
+  return 0;
 
   init_param();
 
@@ -331,7 +505,7 @@ int main(){
  
     */
 
-   test_gibbs_H(0);
+   test_gibbs_H();
 
   
     /*
