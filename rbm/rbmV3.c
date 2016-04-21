@@ -62,8 +62,6 @@ void gibbs_H(int * h0, int y0, int *x0);
 int gibbs_Y(int* h0);
 void gibbs_X(int * x, int * h0);
 
-
-
 double uniform()
 {
     return (double)rand() / (double)(RAND_MAX);
@@ -150,8 +148,7 @@ void init_param()
  Load all images into memory
  Returns pointer to the first image
 */
-void get_images(int *_num_img, unsigned char **_images, 
-                int **_labels, char *imagesFileName, char *labelsFileName)
+void get_images(int *_num_img, unsigned char **_images, int **_labels, char *imagesFileName, char *labelsFileName)
 {
     int num_img;
     unsigned char *images;
@@ -261,32 +258,36 @@ double sigmoid(double val)
  * This function if more general then the previous one for h0_cap
  * h <- sigmoid( c + Wx + Uy )
  */
-void h_update(double * h, int y0, int * x0, double * c, 
-              double * W, double * U, int n, int D, int K){
-
+void h_update(double * h, int y0, int * x0, double * c, double * W, double * U, int n, int D, int K){
+    check_bounds("1");
     for (int i = 0; i < n ; i++)
     {
+        check_bounds("2");
         double sum = c[i];
+        //printf("sum after c:%lf\n",sum);
+        check_bounds("3");
         for (int j = 0; j < D; j++)
         {
             sum = sum + W[i * D + j] * x0[j];
         }
-
-
+        //printf("sum after W:%lf\n",sum);
+        check_bounds("4");
         //Can be optimized
         for (int j = 0; j < K; j++)
         {
             if (j == y0) sum = sum + U[i * K + j];
         }
-
+        check_bounds("5");
         h[i] = sigmoid(sum);
+        printf("sum:%lf h[%d]:%lf\n", sum,i,h[i]);
+        check_bounds("6");
     }
+    check_bounds("7");
 
 }
 
 
-void W_update(double * W, double * h0_cap, double * h1_cap, 
-              int * x0, int * x1, double lambda, int n, int D){
+void W_update(double * W, double * h0_cap, double * h1_cap, int * x0, int * x1, double lambda, int n, int D){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < D; j++)
@@ -321,8 +322,7 @@ void d_update(double * d, int y0, int y1, double lambda, int K){
     }
 }
 
-void U_update(double * U, double * h0_cap, double * h1_cap, 
-              int y0, int y1, double lambda, int n, int K){
+void U_update(double * U, double * h0_cap, double * h1_cap, int y0, int y1, double lambda, int n, int K){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < K; j++)
@@ -350,7 +350,8 @@ void COD_training_update(int yi, int * xi) //DONE
     
     // Here we update h0_cap <- sigmoid( c + Wx0 + Uy0 )
     h_update(h0_cap, y0, x0, c, W, U, n, D, K);
-
+    check_bounds("After h0-Update");
+    
     //Negative Phase
     int * h0 = (int *) malloc(sizeof(int) * n);
     int * x1 = (int *) malloc(sizeof(int) * D);
@@ -358,19 +359,28 @@ void COD_training_update(int yi, int * xi) //DONE
 
     // Compute Gibbs samplings for h0, y1 and x1
     gibbs_H(h0, y0, x0);
+    check_bounds("After gibbs_H");
     int y1 = gibbs_Y(h0);
+    check_bounds("After gibbs_Y");
     gibbs_X(x1, h0);
+    check_bounds("After gibbs_X");
 
     
     // Here we update h1_cap <- sigmoid( c + Wx1 + Uy1 )
     h_update(h1_cap, y1, x1, c, W, U, n, D, K);
+    check_bounds("After h1-Update");
 
     //Update Phase 
     W_update(W, h0_cap, h1_cap, x0, x1, lambda, n, D);
+    check_bounds("After W-Update");
     b_update(b, x0, x1, lambda, n);
+    check_bounds("After b-Update");
     c_update(c, h0_cap, h1_cap, lambda, n);
+    check_bounds("After c-Update");
     d_update(d, y0, y1, lambda, K);
+    check_bounds("After d-Update");
     U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
+    check_bounds("After U-Update");
 
     //free(h0_cap);
     free(h1_cap);
@@ -379,51 +389,42 @@ void COD_training_update(int yi, int * xi) //DONE
 
 }
 
-double energy(int y, int *x, double * h, double * W, 
-                double * b, double * c, double * d, double * U, 
-                int n, int D, int K)
+double energy(int y, int *x)
 {
     double sum = 0;
-    double tmp;
-
-
-    // sum += h'Wx
+    
+    //double * energy_temp = (double *) malloc(sizeof(double)*n);
+    
     for(int i=0;i<n;i++)
     {
-        // Matrix line with vector multiplication
-        tmp = 0;
         for(int j=0;j<D;j++)
         {
-            tmp += W[i*D+j] * x[j];
+            energy_temp[i] = W[i*D+j] * x[i];
         }
-
-        sum += tmp * h[i];
+        sum = sum + energy_temp[i] * h0_cap[i];
     }
-
-    // sum += b'x 
+    
     for(int i=0; i<D ;i++)
     {
-        sum += b[i] * x[i];
+        sum = sum + b[i] * x[i];
     }
     
-    // sum += c'h
     for(int i=0; i<n;i++)
     {
-        sum += c[i] * h[i];
+        sum = sum + c[i] * h0_cap[i];
     }
     
-    // sum += d'y
-    sum += d[y];
+    sum = sum + d[y];
     
-    // sum += h'Uy
+    
     for(int i=0;i<n;i++)
     {
-        sum += U[i*K+y] * h[i];
+        energy_temp[i] = U[i*K+y];
+        sum = sum + energy_temp[i] * h0_cap[i];
     }
     
-    return -sum;
+    return -1*sum;
 }
-
 
 double energy_for_all()
 {
@@ -432,11 +433,7 @@ double energy_for_all()
     for(int k=0; k<num_img_train ; k++)
     {
         //printf("energy image %d \n ", k);
-
-        double e = energy(get_label(k, labels_train), get_image(k, images_train), 
-                h0_cap, W, b, c, d, U, n, D, K);
-
-        sum += e;
+        sum = sum + energy(get_label(k, labels_train), get_image(k, images_train));
     }
 
     return sum;
@@ -449,7 +446,7 @@ void COD_train()
     int i;
     for (i = 0; i < num_img_train; i++)
     {
-        //printf("training image %d \n ", i + 1);
+        printf("training image %d \n ", i + 1);
         COD_training_update(get_label(i, labels_train), get_image(i, images_train));
         // if(i%500==0)printf("training image %d \n ", i + 1);
 
@@ -753,13 +750,12 @@ int main()
     printf(" DONE Initializing W b c d and U\n");
     fflush(stdout);
     int T=0;
-
     while(1){
     //printf("Traing time %d \n",T++);
     COD_train();
     predict_images ();
     double score = score_function();
-    printf("                                     Errors %d %lf \n", T++, score);
+    printf("Errors %d %lf \n", T++, score);
     //save_parameters ();
 
     }
