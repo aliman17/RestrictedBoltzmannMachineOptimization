@@ -10,7 +10,7 @@
 //#define K 10       //Number of classes
 
 const int D = 784;
-const int n = 6000;
+const int n = 100;
 const int K = 10;
 const double lambda = 0.005;
 
@@ -583,7 +583,11 @@ int Predict_one_image(int *x) {
         for (int j = 0; j < n; j++) {
 
             prod += log((1 + exp(U[j * K + y] + precomValues[j])));
+            //prod += U[j * K + y] + precomValues[j];
+            
+            //printf("NUM: %f,  %f,  %f\n", U[j * K + y], precomValues[j], exp(U[j * K + y] + precomValues[j])   );
         }
+        //exit(0); // REMOVE
         prod = d[y] + prod;
 
         numerators[y] = prod;
@@ -615,6 +619,11 @@ int Predict_one_image(int *x) {
 
     }
 
+
+    // for (int i = 0; i<K; i++){
+    //     printf("%f  ", numerators[i]);
+    // }
+    // printf("\nmax: %d\n", mostProClass);
 
     free(precomValues);
     free(numerators);
@@ -729,7 +738,7 @@ int main()
     get_images(&num_img_train, &images_train_init, &labels_train,
                "../MNISTDataSet/train-images-idx3-ubyte", "../MNISTDataSet/train-labels-idx1-ubyte");
 
-    num_img_train = 1000;  // REMOVE
+    num_img_train = 200;  // REMOVE
     get_images(&num_img_test, &images_test_init, &labels_test,
              "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
     num_img_test = 100; // REMOVE
