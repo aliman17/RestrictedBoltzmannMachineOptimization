@@ -1,0 +1,124 @@
+H_update: 
+	adds: 	n(D+K) 
+	mults: 	nD
+	sigmoid: n
+	reads: 	n(1 + 2D + K)
+	writes: n
+	if: 	nK  (should we count them???)
+
+	Comment: 1st inner loop: loop unrolling + scalar replacement
+			 2nd inner loop: full unrolling (K = 10)
+			 outer loop: unrolling + scalar replacement
+			 vector SIMD
+			 consider cache misses (blocking?, ...)
+			 if vs mask???
+
+W_update:
+	adds:	2nD 
+	mults:	3nD
+	reads:	5nD
+	writes: nD
+
+	Comment: loop unrolling + scalar replacement to rearrange adds and mults
+			 SIMD instructions
+
+
+b_update:
+	adds: 	2D
+	mults:	D
+	read:	3D
+	writes: D
+
+	Comment: loop unrolling
+			 SIMD instructions
+
+c_update:
+	adds:	2n
+	mults: 	n
+	reads:	3n
+	writes: n
+
+	Comment: loop unrolling
+			 SIMD instructions
+
+d_update:
+	adds: 	bound at most 2K
+	mults:	0
+	reads:	1
+	writes:	2
+
+	Comment: is it possible to do sth with IFs???
+
+U_update:
+	adds: 	2nK
+	mults:	2nK
+	reads:	3nK
+	writes: 2nK 
+
+	All of them upper bound
+
+	Comment: IFs???
+
+gibbs_H:
+	adds:	n(D + 1)
+	mults:	nD
+	sigmoid: n
+	uniform: n
+	reads:	n(2 + 2D)
+	writes: n
+	ifs:	n
+
+	Comment: inner loop - loop unrolling + scallar replacement
+			 outer loop - loop unrolling
+			 SIMD instructions	
+
+gibbs_Y:
+	adds: 	K(n + 1) + K
+	mults:	nK
+	divs:	K
+	reads:	K(2 + 2n) + K + K
+	writes:	K + K
+	uniform: 1
+	ifs:	K
+	allocation: K doubles
+
+	Comment: loop unrolling
+			 full unrolling of K-loops
+			 SIMD instructions
+
+gibbs_X:
+	adds:	Dn
+	mults:	Dn
+	reads:	D + 2nD
+	writes:	D
+	sigmoid	D
+	uniform D
+	ifs:	D
+
+	Comment: loop unrolling + sc. replacement
+			 SIMD instructions
+
+
+uniform:
+	rand:	1
+	div:	1
+
+COD_training_update:
+	h_update
+	allocations: n ints, D ints, n doubles
+	gibbs_H
+	...
+
+Predict:
+	adds:	nD + n + 3Kn + K
+	mults:	nD
+	log:	Kn
+	exp:	Kn
+	reads:	2nD + n + 2Kn + K + K
+	writes:	n + K
+	ifs: 	K
+
+	allocations: n doubles, K doubles, 
+
+
+
