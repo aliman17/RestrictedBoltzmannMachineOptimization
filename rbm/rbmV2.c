@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include "tsc_x86.h"
 
 //RANDOM LINE ADDED
 
@@ -10,10 +11,16 @@
 //#define K 10       //Number of classes
 
 const int D = 784;
-const int n = 100;
+int n = 150;
 const int K = 10;
 const double lambda = 0.005;
 
+#define PERF_U_UPDATE
+double mean = 0;
+int count = 0;
+double m2 = 0;
+double delta;
+#define FREQ 1.6e09
 
 //Training Data
 int *images_train;
@@ -335,7 +342,19 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     //double * h0_cap = (double *) malloc(sizeof(double) * n);
     
     // Here we update h0_cap <- sigmoid( c + Wx0 + Uy0 )
+#ifdef PERF_H0_UPDATE
+    myInt64 start;
+    start = start_tsc();
+#endif
     h_update(h0_cap, y0, x0, c, W, U, n, D, K);
+#ifdef PERF_H0_UPDATE
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+    
 
     //Negative Phase
     int * h0 = (int *) malloc(sizeof(int) * n);
@@ -343,20 +362,139 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     double * h1_cap = (double *) malloc(sizeof(double) * n);
 
     // Compute Gibbs samplings for h0, y1 and x1
+#ifdef PERF_GIBBS_H
+    myInt64 start;
+    start = start_tsc();
+#endif
     gibbs_H(h0, y0, x0);
+#ifdef PERF_GIBBS_H
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+    
+    
+    
+#ifdef PERF_GIBBS_Y
+    myInt64 start;
+    start = start_tsc();
+#endif
     int y1 = gibbs_Y_(h0, U, d, K, n);
+#ifdef PERF_GIBBS_Y
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+    
+    
+    
+#ifdef PERF_GIBBS_X
+    myInt64 start;
+    start = start_tsc();
+#endif
     gibbs_X_(x1, h0, W, D, n);
+#ifdef PERF_GIBBS_X
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+    
+    
 
     
     // Here we update h1_cap <- sigmoid( c + Wx1 + Uy1 )
+#ifdef PERF_H1_UPDATE
+    myInt64 start;
+    start = start_tsc();
+#endif
     h_update(h1_cap, y1, x1, c, W, U, n, D, K);
+#ifdef PERF_H1_UPDATE
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+    
+    
 
-    //Update Phase 
+    //Update Phase
+#ifdef PERF_W_UPDATE
+    myInt64 start;
+    start = start_tsc();
+#endif
     W_update(W, h0_cap, h1_cap, x0, x1, lambda, n, D);
+#ifdef PERF_W_UPDATE
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+
+    
+    
+#ifdef PERF_B_UPDATE
+    myInt64 start;
+    start = start_tsc();
+#endif
     b_update(b, x0, x1, lambda, n);
+#ifdef PERF_B_UPDATE
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+    
+    
+#ifdef PERF_C_UPDATE
+    myInt64 start;
+    start = start_tsc();
+#endif
     c_update(c, h0_cap, h1_cap, lambda, n);
+#ifdef PERF_C_UPDATE
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+    
+    
+    
+#ifdef PERF_D_UPDATE
+    myInt64 start;
+    start = start_tsc();
+#endif
     d_update(d, y0, y1, lambda, K);
+#ifdef PERF_D_UPDATE
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
+
+    
+#ifdef PERF_U_UPDATE
+    myInt64 start;
+    start = start_tsc();
+#endif
     U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
+#ifdef PERF_U_UPDATE
+    myInt64 cycles = stop_tsc(start);
+    count = count + 1;
+    delta = cycles - mean;
+    mean += delta/(double)count;
+    m2 += delta*(cycles - mean);
+#endif
 
     //free(h0_cap);
     free(h1_cap);
@@ -374,15 +512,27 @@ void COD_train()
     for (i = 0; i < num_img_train; i++)
     {
         //printf("training image %d \n ", i + 1);
+#ifdef PERF_COD_TRAIN_UPDATE
+        myInt64 start;
+        start = start_tsc();
+#endif
         COD_training_update(get_label(i, labels_train), get_image(i, images_train),
                         h0_cap,
                         b, c, d, 
                         U, W, n, D, K);
+#ifdef PERF_COD_TRAIN_UPDATE
+        myInt64 cycles = stop_tsc(start);
+        count = count + 1;
+        delta = cycles - mean;
+        mean += delta/(double)count;
+        m2 += delta*(cycles - mean);
+#endif
+        
         // if(i%500==0)printf("training image %d \n ", i + 1);
 
          if(i==0)
          {
-           printf(" Energy:%lf\n", energy_for_all());
+           //printf(" Energy:%lf\n", energy_for_all());
            //fflush(stdout);
          }
     }
@@ -649,7 +799,9 @@ double score_function() {
     double score = 0;
     for (int i = 0; i < num_img_test; i++) {
         if (predictions[i] != labels_test[i])
+        {
             score++;
+        }
     }
 
     return 100 * score / ((double) num_img_test);
@@ -732,13 +884,16 @@ void read_parameters(){
 
 #ifndef UNITTEST_MODE
 
-int main()
+int main(int argc, char * argv[])
 {
     srand(1);
+    
+    if(argc > 1) n = atoi(argv[1]);
+    
     get_images(&num_img_train, &images_train_init, &labels_train,
                "../MNISTDataSet/train-images-idx3-ubyte", "../MNISTDataSet/train-labels-idx1-ubyte");
 
-    num_img_train = 2000;  // REMOVE
+    num_img_train = 2500;  // REMOVE
     get_images(&num_img_test, &images_test_init, &labels_test,
              "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
     num_img_test = 200; // REMOVE
@@ -752,19 +907,34 @@ int main()
     //num_img_train=1000;
     //num_img_test=200;
     //read_parameters();
-    printf(" DONE Initializing W b c d and U\n");
+    //printf(" DONE Initializing W b c d and U\n");
     fflush(stdout);
     int T=0;
 
-    while(1){
+    while(T<4)
+    {
     //printf("Traing time %d \n",T++);
-    COD_train();
-    predict_images ();
-    double score = score_function();
-    printf("                                     Errors %d %lf \n", T++, score);
-    //save_parameters ();
-
+    
+        
+#ifdef PERF_COD_TRAIN
+        myInt64 start;
+        start = start_tsc();
+#endif
+        COD_train();
+#ifdef PERF_COD_TRAIN
+        myInt64 cycles = stop_tsc(start);
+        count = count + 1;
+        delta = cycles - mean;
+        mean += delta/(double)count;
+        m2 += delta*(cycles - mean);
+#endif
+        //predict_images ();
+        //double score = score_function();
+        //printf("                                     Errors %d %lf \n", T++, score);
+        //save_parameters ();
+        T++;
     }
+    printf("%d %lf %lf %lf %lf\n", n, mean, sqrt(m2/(double)(count-1)), mean/FREQ, sqrt(m2/(double)(count-1))/FREQ);
 
     return 0;
 }
