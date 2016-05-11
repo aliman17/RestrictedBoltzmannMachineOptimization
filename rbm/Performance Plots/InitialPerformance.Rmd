@@ -85,7 +85,7 @@ n <- cod[,1]
 cycles <- cod[,2]
 
 # Compute number of flops
-flops <- 2500*(10308*n + 7117)
+flops <- 2500*(10272*n + 7099)
 
 # Performance
 perf <- flops / cycles
@@ -123,6 +123,8 @@ Note: The peak performance is just a little bit over 2 flops/cycle but that is n
 
 # Functions Performance 
 
+Note: Compiltion with O0 and no vectorization
+
 ```{r echo=FALSE}
 
 plot_perf <- function(name, n_koef, n_intercept){
@@ -147,14 +149,14 @@ plot_perf <- function(name, n_koef, n_intercept){
 }
 
 
-p1 <- plot_perf("perf_cod_train_update", 10308, 7117)
+p1 <- plot_perf("perf_cod_train_update", 10263, 7099)
 p2 <- plot_perf("perf_b_update", 0, 2358)
 p3 <- plot_perf("perf_c_update", 3, 0)
-p4 <- plot_perf("perf_d_update", 0, 20)
+p4 <- plot_perf("perf_d_update", 0, 2)
 p5 <- plot_perf("perf_w_update", 3930, 0)
-p6 <- plot_perf("perf_u_update", 40, 0)
-p7 <- plot_perf("perf_h0_update", 1582, 0)
-p8 <- plot_perf("perf_h1_update", 1582, 0)
+p6 <- plot_perf("perf_u_update", 4, 0)
+p7 <- plot_perf("perf_h0_update", 1573, 0)
+p8 <- plot_perf("perf_h1_update", 1573, 0)
 p9 <- plot_perf("perf_gibbs_x", 1572, 4716)
 p10 <- plot_perf("perf_gibbs_y", 20, 23)
 p11 <- plot_perf("perf_gibbs_h", 1579, 0)
@@ -170,14 +172,14 @@ multiplot(p9, p10, p11, layout = m)
 
 ```{r eval=FALSE}
 H_update: 
-	adds:     n 794 
+	adds:     n 785 
 	mults:    n 784
 	sigmoid:  n 4
-	reads:    n 1579
+	reads:    n 1570
 	writes:   n
 	if:       n 10  (should we count them???)
 
-	All: 1582 n
+	All: 1573 n
 
 	Comment: 1st inner loop: loop unrolling + scalar replacement
 			 2nd inner loop: full unrolling (K = 10)
@@ -229,23 +231,23 @@ c_update:
 			 SIMD instructions
 
 d_update:
-	adds:   bound at most 20
+	adds:   bound at most 2
 	mults:  0
 	reads:  20
 	writes: 20
 
-	All: 20
+	All: 2
 
 	Comment: is it possible to do sth with IFs???
 
 U_update:
-	adds:   20 n
-	mults:  20 n
-	reads:  30 n
-	writes: 20 n 
+	adds:   2 n
+	mults:  2 n
+	reads:  3 n
+	writes: 2 n 
 
 	All of them upper bound
-	All: 40 n
+	All: 4 n  (40before)
 
 	Comment: IFs???
 
@@ -307,10 +309,10 @@ COD_training_update:
 	gibbs_H
 	...
 
-	All flops: 10308 n + 7117
+	All flops: 10263 n + 7099
 
 COD_train:
-	All: 2500*(10308 n + 7117)
+	All: 2500*(10263 n + 7099)
 
 Predict:
 	adds:   n 786 + n + 3Kn + K

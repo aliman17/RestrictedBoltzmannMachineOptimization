@@ -1,8 +1,8 @@
 H_update: 
-	adds: 	n(D+K) 
+	adds: 	n(D+1) 
 	mults: 	nD
 	sigmoid: n
-	reads: 	n(1 + 2D + K)
+	reads: 	n(1 + 2D + 1)
 	writes: n
 	if: 	nK  (should we count them???)
 
@@ -44,7 +44,7 @@ c_update:
 			 SIMD instructions
 
 d_update:
-	adds: 	bound at most 2K
+	adds: 	bound at most 2
 	mults:	0
 	reads:	1
 	writes:	2
@@ -52,8 +52,8 @@ d_update:
 	Comment: is it possible to do sth with IFs???
 
 U_update:
-	adds: 	2nK
-	mults:	2nK
+	adds: 	2n
+	mults:	2n
 	reads:	3nK
 	writes: 2nK 
 

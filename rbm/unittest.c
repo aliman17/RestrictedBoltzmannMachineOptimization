@@ -291,7 +291,7 @@ void test_energy(){
   double expected = -27;
 
   // Compute
-  double result = energy_t(2, x, h, W, b, c, d, U, n, D, K);
+  double result = energy(2, x, h, W, b, c, d, U, n, D, K);
 
   // Compare
   if (expected == result)
@@ -331,10 +331,6 @@ void test_init_params(){
     }
   printf ("Init params test succeeded \n");
 }
-
-// void test_gibbs_H(){
-
-// }
 
 
 void test_gibbs_H_helper(double param)
@@ -412,7 +408,7 @@ b[i]=param;
 }
 
 
-gibbs_X(x,h0);
+gibbs_X_(x,h0, W, D, n);
 
 double count=0;
 
@@ -473,7 +469,7 @@ for(int i=0;i<K;i++){
 
 
 for(int i=0;i<numsamples;i++){
-counts.mr[gibbs_Y(h0)]+=1;
+counts.mr[gibbs_Y_(h0, U, d, K, n)]+=1;
 }
 
 printf("gibbs_Y testing: \n");
@@ -485,10 +481,6 @@ for(int i=0;i<K;i++){
 
 
 }
-
-
-
-
 
 
 
@@ -504,59 +496,14 @@ int main(){
   test_energy();
 
 
-test_gibbs_H_helper(-1000);
+  test_gibbs_H_helper(-1000);
 
   // THE REST IS HERE
   return 0;
 
   init_param();
 
-  /*
-    Test uniform() function
-    */
-  //  test_uniform();
-
-    /*
-    Test init params
-    */
-    //    test_init_params(); 
-
-    /*
-    test gibbs sampling of h
-
-    test if given p, the outcome has the right distribution
-    does not test yet the correctness of the calculation of p
-
-    from the first result the probabilities seem to be inverted in the original implementation.
-
- 
-    */
-
-   test_gibbs_H();
-
   
-    /*
-    test gibbs sampling of X
-
-    test if given p, the outcome has the right distribution
-    does not test yet the correctness of the calculation of p
-
-   from the first result the probabilities seem to be inverted in the original implementation.
-
-   
-    */
-    test_gibbs_x(0.34);
-  
-
-    /*
-    test gibbs sampling of X
-
-    test if given the weigths/bias, the outcome has the right distribution
-    does not test yet the correctness of the calculation of the weights/bias
-
-   from the first result the probabilities seem to be OK
-
-    */
 
      test_gibbs_Y(1,-100,-100,-100,-100,-100,-100,-100,-100,-100);
 
