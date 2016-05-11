@@ -11,6 +11,7 @@ while read line; do
         echo $tag
         gcc ./rbm_main.c -I./$1 -I. $2 -o $1/measure -D$tag
         c=100
+        printf "" > $1/$tag
         while ((c<=800))
         do
             echo $c
