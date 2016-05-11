@@ -3,7 +3,7 @@
 # Parse arguments
 args = commandArgs(trailingOnly=TRUE)
 if (length(args)!=1) {
-  setwd("~/Desktop/GIT/FastNumericalCode/rbm/update1")
+  setwd("~/Desktop/GIT/FastNumericalCode/rbm/baseline")
 } else {
   current_dir <- args[1]  
   setwd(current_dir)
@@ -70,10 +70,10 @@ plot_perf <- function(name, n_koef, n_intercept){
   cycles <- cod[,2]                   # Get cycles
   flops <- n_koef * n + n_intercept   # Compute flops 
   perf <- flops / cycles              # Get performance
-  peak_performance <- 2               # Set peak performance
-
+  peak_performance <- 4               # Set peak performance
+ 
   perf_proc <- perf/peak_performance * 100
-  
+
   # Plot
   p <- qplot(n, perf_proc, 
         xlab = "Number of hidden layers", 
@@ -84,6 +84,7 @@ plot_perf <- function(name, n_koef, n_intercept){
     geom_hline(yintercept = 100, col = 2) +
     annotate("text", label = "peak performance", x = 400, y = 95, size = 4, colour = "red") +
     annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+
   return(p)
 }
 
@@ -104,7 +105,6 @@ for(i in 1:nrow(config)){
   #plots <- c(plot)
   # Store plot
   jpeg(paste("00", name, ".jpeg", sep = ""))
-  print(plot)
   dev.off()
 }
 #multiplot(plotlist = plots, col = 2)
