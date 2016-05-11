@@ -15,7 +15,7 @@ int n = 150;
 const int K = 10;
 const double lambda = 0.005;
 
-#define PERF_U_UPDATE
+//#define PERF_U_UPDATE
 double mean = 0;
 int count = 0;
 double m2 = 0;
@@ -50,12 +50,12 @@ double *h0_cap;
 
 
 /*
-Definition of useful structure to check gibbs_Y and the prediction routines
-*/
+ Definition of useful structure to check gibbs_Y and the prediction routines
+ */
 struct miniarr{
-double mr[K];
+    double mr[K];
 };
-typedef struct miniarr Parr; 
+typedef struct miniarr Parr;
 
 
 
@@ -82,17 +82,17 @@ int ReverseInt (int i)
 }
 
 void image_pp() {
-
+    
     images_train = (int *)malloc(sizeof(int) * D * num_img_train);
     images_test = (int *)malloc(sizeof(int) * D * num_img_test);
-
+    
     for (int i = 0; i < num_img_train * D; i++)
-        images_train[i] =  (int)images_train_init[i] < 127 ? 0 : 1;
-
-
+    images_train[i] =  (int)images_train_init[i] < 127 ? 0 : 1;
+    
+    
     for (int i = 0; i < num_img_test * D; i++)
-        images_test[i] =  (int)images_test_init[i] < 127 ? 0 : 1;
-
+    images_test[i] =  (int)images_test_init[i] < 127 ? 0 : 1;
+    
 }
 
 
@@ -104,50 +104,50 @@ void init_param()
     d = (double *) malloc(K * sizeof(double));
     U = (double *) malloc(n * K * sizeof(double));
     h0_cap = (double *) malloc(sizeof(double) * n);
-
+    
     //The biases b ,c ,d are initiallez to zero
-
+    
     for (int i = 0; i < D; i++) {
         b[i] = 0;
     }
-
+    
     for (int i = 0; i < n; i++) {
         c[i] = 0;
     }
-
+    
     for (int i = 0; i < K; i++) {
         d[i] = 0;
     }
-
+    
     /*
      The matrices are initialized with a random number
      in the range [-m^0.5,m^0.5] where m is the maximum between the number of rows and columns of the matrix.
      */
-
+    
     double maxW = n < D ? 1.0 / sqrt(D) : 1.0 / sqrt(n);
     for (int i = 0 ; i < n * D; i++) {
         W[i] = (uniform() - 0.5) * maxW;
     }
-
+    
     double maxU = n < K ? 1.0 / sqrt(K) : 1.0 / sqrt(n);
     for (int i = 0 ; i < n * K; i++) {
         U[i] = (uniform() - 0.5) * maxU;
     }
-
+    
 }
 
 
 /*
  Load all images into memory
  Returns pointer to the first image
-*/
-void get_images(int *_num_img, unsigned char **_images, 
+ */
+void get_images(int *_num_img, unsigned char **_images,
                 int **_labels, char *imagesFileName, char *labelsFileName)
 {
     int num_img;
     unsigned char *images;
     int *labels;
-
+    
     FILE *image_file = fopen(imagesFileName, "rb");
     FILE *label_file = fopen(labelsFileName, "rb");
     if (!image_file) {
@@ -158,69 +158,69 @@ void get_images(int *_num_img, unsigned char **_images,
         perror("Label file opening failed");
         exit (1);
     }
-
+    
     int magicNumber;
     int numberOfRows;
     int numberOfColumns;
     int labelNumberOfImages;
     int labelMagicNumber;
     int code;
-
+    
     fseek(image_file, 0, SEEK_SET);
     fread(&magicNumber, sizeof(int), 1, image_file);
     fread(&num_img, sizeof(int), 1, image_file);
     fread(&numberOfRows, sizeof(int), 1, image_file);
     fread(&numberOfColumns, sizeof(int), 1, image_file);
-
+    
     fseek(label_file, 0, SEEK_SET);
     fread(&labelMagicNumber, sizeof(int), 1, label_file);
     fread(&labelNumberOfImages, sizeof(int), 1, label_file);
-
+    
     magicNumber = ReverseInt(magicNumber);
     num_img = ReverseInt(num_img);
     numberOfRows = ReverseInt(numberOfRows);
     numberOfColumns = ReverseInt(numberOfColumns);
     labelNumberOfImages = ReverseInt(labelNumberOfImages);
     labelMagicNumber = ReverseInt(labelMagicNumber);
-
+    
     *_num_img = num_img;
-
+    
     images = (unsigned char *) malloc(sizeof(unsigned char) * num_img * numberOfRows * numberOfColumns);
     unsigned char * temp_labels = (unsigned char *) malloc(sizeof(int) * num_img);
     labels = (int *) malloc(sizeof(int) * num_img);
-
+    
     code = fread(images, sizeof(unsigned char), num_img * numberOfRows * numberOfColumns, image_file);
-
+    
     if (code != num_img * numberOfRows * numberOfColumns) {
         perror("Image transfer failed");
         exit (1);
     }
-
+    
     code = fread(temp_labels, sizeof(unsigned char), num_img, label_file);
     if (code != labelNumberOfImages) {
         perror("Label transfer failed");
         exit (1);
     }
-
+    
     for (int i = 0; i < labelNumberOfImages; i++)
     {
         *(labels + i) = *(temp_labels + i);
         //printf("%d ", *(labels+i));
     }
-
+    
     *_labels = labels;
     *_images = images;
-
+    
     fclose(image_file);
     fclose(label_file);
-
+    
 }
 
 
 /*
  Get one image from the loaded set of images
  Output is a pointer to that image
-*/
+ */
 int * get_image(int num, int *start)
 {
     return start + num * D;
@@ -228,7 +228,7 @@ int * get_image(int num, int *start)
 
 /*
  Gives us lable of the image n
-*/
+ */
 int get_label(int num, int * labels)
 {
     return *(labels + num);
@@ -252,9 +252,9 @@ double sigmoid(double val)
  * This function if more general then the previous one for h0_cap
  * h <- sigmoid( c + Wx + Uy )
  */
-void h_update(double * h, int y0, int * x0, double * c, 
+void h_update(double * h, int y0, int * x0, double * c,
               double * W, double * U, int n, int D, int K){
-
+    
     for (int i = 0; i < n ; i++)
     {
         double sum = c[i];
@@ -262,21 +262,21 @@ void h_update(double * h, int y0, int * x0, double * c,
         {
             sum = sum + W[i * D + j] * x0[j];
         }
-
-
+        
+        
         //Can be optimized
         for (int j = 0; j < K; j++)
         {
             if (j == y0) sum = sum + U[i * K + j];
         }
-
+        
         h[i] = sigmoid(sum);
     }
-
+    
 }
 
 
-void W_update(double * W, double * h0_cap, double * h1_cap, 
+void W_update(double * W, double * h0_cap, double * h1_cap,
               int * x0, int * x1, double lambda, int n, int D){
     for (int i = 0; i < n; i++)
     {
@@ -305,24 +305,24 @@ void d_update(double * d, int y0, int y1, double lambda, int K){
     for (int i = 0; i < K; i++)
     {
         if (i == y0)
-            d[i] = d[i] + lambda;
-
+        d[i] = d[i] + lambda;
+        
         if (i == y1)
-            d[i] = d[i] - lambda;
+        d[i] = d[i] - lambda;
     }
 }
 
-void U_update(double * U, double * h0_cap, double * h1_cap, 
+void U_update(double * U, double * h0_cap, double * h1_cap,
               int y0, int y1, double lambda, int n, int K){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < K; j++)
         {
             if (j == y0)
-                U[i * K + j] = U[i * K + j] + lambda * (h0_cap[i]);
-
+            U[i * K + j] = U[i * K + j] + lambda * (h0_cap[i]);
+            
             if (j == y1)
-                U[i * K + j] = U[i * K + j] + lambda * (-h1_cap[i]);
+            U[i * K + j] = U[i * K + j] + lambda * (-h1_cap[i]);
         }
     }
 }
@@ -330,15 +330,15 @@ void U_update(double * U, double * h0_cap, double * h1_cap,
 
 /*
  Performs next step of training with a new image and it's class
-*/
+ */
 void COD_training_update(int yi, int * xi, double * h0_cap,
-                        double * b, double * c, double * d, 
-                        double * U, double * W, int n, int D, int K) //DONE
+                         double * b, double * c, double * d,
+                         double * U, double * W, int n, int D, int K) //DONE
 {
     //Positive Phase
     int y0 = yi;
     int * x0 = xi;
-
+    
     //double * h0_cap = (double *) malloc(sizeof(double) * n);
     
     // Here we update h0_cap <- sigmoid( c + Wx0 + Uy0 )
@@ -355,12 +355,12 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     m2 += delta*(cycles - mean);
 #endif
     
-
+    
     //Negative Phase
     int * h0 = (int *) malloc(sizeof(int) * n);
     int * x1 = (int *) malloc(sizeof(int) * D);
     double * h1_cap = (double *) malloc(sizeof(double) * n);
-
+    
     // Compute Gibbs samplings for h0, y1 and x1
 #ifdef PERF_GIBBS_H
     myInt64 start;
@@ -406,7 +406,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
 #endif
     
     
-
+    
     
     // Here we update h1_cap <- sigmoid( c + Wx1 + Uy1 )
 #ifdef PERF_H1_UPDATE
@@ -423,7 +423,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
 #endif
     
     
-
+    
     //Update Phase
 #ifdef PERF_W_UPDATE
     myInt64 start;
@@ -437,7 +437,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     mean += delta/(double)count;
     m2 += delta*(cycles - mean);
 #endif
-
+    
     
     
 #ifdef PERF_B_UPDATE
@@ -481,7 +481,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     mean += delta/(double)count;
     m2 += delta*(cycles - mean);
 #endif
-
+    
     
 #ifdef PERF_U_UPDATE
     myInt64 start;
@@ -495,17 +495,17 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     mean += delta/(double)count;
     m2 += delta*(cycles - mean);
 #endif
-
+    
     //free(h0_cap);
     free(h1_cap);
     free(x1);
     free(h0);
-
+    
 }
 
 /*
  Runs CODTrainingUpdate over all images and trains the model
-*/
+ */
 void COD_train()
 {
     int i;
@@ -517,9 +517,9 @@ void COD_train()
         start = start_tsc();
 #endif
         COD_training_update(get_label(i, labels_train), get_image(i, images_train),
-                        h0_cap,
-                        b, c, d, 
-                        U, W, n, D, K);
+                            h0_cap,
+                            b, c, d,
+                            U, W, n, D, K);
 #ifdef PERF_COD_TRAIN_UPDATE
         myInt64 cycles = stop_tsc(start);
         count = count + 1;
@@ -529,23 +529,23 @@ void COD_train()
 #endif
         
         // if(i%500==0)printf("training image %d \n ", i + 1);
-
-         if(i==0)
-         {
-           //printf(" Energy:%lf\n", energy_for_all());
-           //fflush(stdout);
-         }
+        
+        if(i==0)
+        {
+            //printf(" Energy:%lf\n", energy_for_all());
+            //fflush(stdout);
+        }
     }
 }
 
-double energy(int y, int *x, double * h, double * W, 
-                double * b, double * c, double * d, double * U, 
-                int n, int D, int K)
+double energy(int y, int *x, double * h, double * W,
+              double * b, double * c, double * d, double * U,
+              int n, int D, int K)
 {
     double sum = 0;
     double tmp;
-
-
+    
+    
     // sum += h'Wx
     for(int i=0;i<n;i++)
     {
@@ -555,11 +555,11 @@ double energy(int y, int *x, double * h, double * W,
         {
             tmp += W[i*D+j] * x[j];
         }
-
+        
         sum += tmp * h[i];
     }
-
-    // sum += b'x 
+    
+    // sum += b'x
     for(int i=0; i<D ;i++)
     {
         sum += b[i] * x[i];
@@ -591,13 +591,13 @@ double energy_for_all()
     for(int k=0; k<num_img_train ; k++)
     {
         //printf("energy image %d \n ", k);
-
-        double e = energy(get_label(k, labels_train), get_image(k, images_train), 
-                h0_cap, W, b, c, d, U, n, D, K);
-
+        
+        double e = energy(get_label(k, labels_train), get_image(k, images_train),
+                          h0_cap, W, b, c, d, U, n, D, K);
+        
         sum += e;
     }
-
+    
     return sum;
 }
 
@@ -605,7 +605,7 @@ double energy_for_all()
 /*
  Gibbs samplings for H (hidden nodes)
  Modifies h0 gibbs_H(h0, y0, x0);
-*/
+ */
 void gibbs_H(int * h0, int y0, int *x0)
 {
     for (int j = 0; j < n; j++)
@@ -615,7 +615,7 @@ void gibbs_H(int * h0, int y0, int *x0)
         {
             sum = sum + W[j * D + i] * x0[i];
         }
-
+        
         double p = sigmoid(sum);
         double rand = uniform();
         if (rand < p)
@@ -630,9 +630,9 @@ void gibbs_H(int * h0, int y0, int *x0)
 }
 
 /*
-Gibbs samplings for Y (label)
-Returns value for Y
-*/
+ Gibbs samplings for Y (label)
+ Returns value for Y
+ */
 int gibbs_Y_(int* h0, double * U, double * d, int K, int n)
 {
     double sum = 0;
@@ -647,16 +647,16 @@ int gibbs_Y_(int* h0, double * U, double * d, int K, int n)
         y_temp[i] = exp(val);
         sum = sum + y_temp[i];
     }
-
+    
     for (int i = 0; i < K; i++)
     {
         y_temp[i] = y_temp[i] / sum;
     }
-
+    
     double rand_n = uniform();
     sum = 0;
-
-
+    
+    
     for (int i = 0; i < K; i++)
     {
         sum = sum + y_temp[i];
@@ -666,19 +666,19 @@ int gibbs_Y_(int* h0, double * U, double * d, int K, int n)
             return i;
         }
     }
-
-
+    
+    
     free(y_temp);
     return K - 1;
-
+    
     
 }
 
 
 /*
-Gibbs samplings for X (image)
-Modifies x
-*/
+ Gibbs samplings for X (image)
+ Modifies x
+ */
 void gibbs_X_(int * x, int * h0, double * W, int D, int n)
 {
     for (int i = 0; i < D; i++)
@@ -688,7 +688,7 @@ void gibbs_X_(int * x, int * h0, double * W, int D, int n)
         {
             sum = sum + W[j * D + i] * h0[j];
         }
-
+        
         double p = sigmoid(sum);
         double rand_n = uniform();
         if (rand_n < p)
@@ -702,241 +702,3 @@ void gibbs_X_(int * x, int * h0, double * W, int D, int n)
     }
 }
 
-
-int Predict_one_image(int *x) {
-
-    //W[j][i]=W[n*j+i] nxD
-    /*
-     calculate the term cj+\sum Wji xi
-     */
-
-    double *precomValues = (double *) malloc(sizeof(double) * n);
-
-
-
-    for (int j = 0; j < n; j++) {
-        double sum = 0;
-        for (int i = 0; i < D; i++) {
-            sum += W[j * D + i] * (double)x[i];
-        }
-        precomValues[j] = c[j] + sum;
-    }
-
-    /*
-     calculate the product exp(dy)*\Prod (1+Exp(Ujy+cj+\sum Wji xi))
-     */
-
-    double *numerators = (double *) malloc(sizeof(double) * K);
-
-    for (int y = 0; y < K; y++) {
-        double prod = 0;
-        for (int j = 0; j < n; j++) {
-
-            prod += log((1 + exp(U[j * K + y] + precomValues[j])));
-            //prod += U[j * K + y] + precomValues[j];
-            
-            //printf("NUM: %f,  %f,  %f\n", U[j * K + y], precomValues[j], exp(U[j * K + y] + precomValues[j])   );
-        }
-        //exit(0); // REMOVE
-        prod = d[y] + prod;
-
-        numerators[y] = prod;
-
-    }
-
-    /*
-     calculate denominator
-     */
-
-    // double denominator=0;
-    // for(int y=0;y<K;y++){
-    //     denominator+=numerators[y];
-    // }
-    /*
-     return most probable class
-     */
-    //posible optimization, the denominator is not requiered to make the predictions
-    int mostProClass = 0;
-    double max = numerators[0];
-
-    for (int y = 1; y < K; y++) {
-
-        if (max < (numerators[y])) {
-            mostProClass = y;
-            max = (numerators[y]);
-        }
-
-
-    }
-
-
-    // for (int i = 0; i<K; i++){
-    //     printf("%f  ", numerators[i]);
-    // }
-    // printf("\nmax: %d\n", mostProClass);
-
-    free(precomValues);
-    free(numerators);
-
-    return mostProClass;
-
-}
-
-void predict_images () {
-
-    predictions = (int *)malloc(sizeof(int) * num_img_test);
-    for (int i = 0; i < num_img_test; i++) {
-        //printf("predicting image %d\n", i + 1);
-        predictions[i] = Predict_one_image(get_image(i, images_test));
-
-    }
-
-}
-
-
-double score_function() {
-
-    double score = 0;
-    for (int i = 0; i < num_img_test; i++) {
-        if (predictions[i] != labels_test[i])
-        {
-            score++;
-        }
-    }
-
-    return 100 * score / ((double) num_img_test);
-
-}
-
-
-void save_parameters ()
-{
-
-
-    // char *name = "./Wparam_v_";
-    // int num =11221230;
-    // char *numstr = (char *) malloc ((int)((ceil(log10(num))+1)*sizeof(char))) ;
-    // sprintf(numstr, "%d", num);
-    // char *extension = ".bin";
-    // char *fullname = (char *) malloc(sizeof(char)*(15+(int)(ceil(log10(num))+1)));
-
-    // strcpy(fullname,name);
-    // strcat(fullname,numstr);
-    // strcat(fullname,extension);
-    
-    // printf("my string %s ",fullname);
-
-    FILE *writeW;
-    writeW = fopen("./Wparam2.bin","wb");
-    fwrite(W,sizeof(double),n*D,writeW);
-    fclose(writeW);
-
-    FILE *writeb;
-    writeb = fopen("./bparam2.bin","wb");
-    fwrite(b,sizeof(double),D,writeb);
-    fclose(writeb);
-
-    FILE *writec;
-    writec = fopen("./cparam2.bin","wb");
-    fwrite(c,sizeof(double),n,writec);
-    fclose(writec);
-
-    FILE *writed;
-    writed = fopen("./dparam2.bin","wb");
-    fwrite(d,sizeof(double),K,writed);
-    fclose(writed);
-
-    FILE *writeU;
-    writeU = fopen("./Uparam2.bin","wb");
-    fwrite(U,sizeof(double),n*K,writeU);
-    fclose(writeU);
-}
-
-void read_parameters(){
-
-    FILE *readW;
-    readW = fopen("./Wparam.bin","rb");
-    fread(W,sizeof(double),n*D,readW);
-    fclose(readW);
-
-    FILE *readb;
-    readb = fopen("./bparam.bin","rb");
-    fread(b,sizeof(double),D,readb);
-    fclose(readb);
-
-    FILE *readc;
-    readc = fopen("./cparam.bin","rb");
-    fread(c,sizeof(double),n,readc);
-    fclose(readc);
-
-    FILE *readd;
-    readd = fopen("./dparam.bin","rb");
-    fread(d,sizeof(double),K,readd);
-    fclose(readd);
-
-    FILE *readU;
-    readU = fopen("./Uparam.bin","rb");
-    fread(U,sizeof(double),n*K,readU);
-    fclose(readU);
-
-
-}
-
-#ifndef UNITTEST_MODE
-
-int main(int argc, char * argv[])
-{
-    srand(1);
-    
-    if(argc > 1) n = atoi(argv[1]);
-    
-    get_images(&num_img_train, &images_train_init, &labels_train,
-               "../MNISTDataSet/train-images-idx3-ubyte", "../MNISTDataSet/train-labels-idx1-ubyte");
-
-    num_img_train = 2500;  // REMOVE
-    get_images(&num_img_test, &images_test_init, &labels_test,
-             "../MNISTDataSet/t10k-images-idx3-ubyte", "../MNISTDataSet/t10k-labels-idx1-ubyte");
-    num_img_test = 200; // REMOVE
-    image_pp();
-
-    //check_images_labels(300, 222); // PROBLEM, doesn't work
-
-    init_param();
-
-    //exit(0);
-    //num_img_train=1000;
-    //num_img_test=200;
-    //read_parameters();
-    //printf(" DONE Initializing W b c d and U\n");
-    fflush(stdout);
-    int T=0;
-
-    while(T<4)
-    {
-    //printf("Traing time %d \n",T++);
-    
-        
-#ifdef PERF_COD_TRAIN
-        myInt64 start;
-        start = start_tsc();
-#endif
-        COD_train();
-#ifdef PERF_COD_TRAIN
-        myInt64 cycles = stop_tsc(start);
-        count = count + 1;
-        delta = cycles - mean;
-        mean += delta/(double)count;
-        m2 += delta*(cycles - mean);
-#endif
-        //predict_images ();
-        //double score = score_function();
-        //printf("                                     Errors %d %lf \n", T++, score);
-        //save_parameters ();
-        T++;
-    }
-    printf("%d %lf %lf %lf %lf\n", n, mean, sqrt(m2/(double)(count-1)), mean/FREQ, sqrt(m2/(double)(count-1))/FREQ);
-
-    return 0;
-}
-
-#endif
