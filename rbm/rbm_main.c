@@ -7,6 +7,21 @@
 //
 
 #include "rbm.h"
+
+
+long double my_log(double imput){
+
+if (imput > 99)
+    {
+        return imput; //+ log(1+exp(-imput));
+    }
+    else
+    {
+         return log(1+exp(imput));
+    }
+
+}
+
 int Predict_one_image(int *x) {
     
     //W[j][i]=W[n*j+i] nxD
@@ -36,7 +51,8 @@ int Predict_one_image(int *x) {
         double prod = 0;
         for (int j = 0; j < n; j++) {
             
-            prod += log((1 + exp(U[j * K + y] + precomValues[j])));
+            //prod += log((1 + exp(U[j * K + y] + precomValues[j])));
+            prod += my_log(U[j * K + y] + precomValues[j]);
             //prod += U[j * K + y] + precomValues[j];
             
             //printf("NUM: %f,  %f,  %f\n", U[j * K + y], precomValues[j], exp(U[j * K + y] + precomValues[j])   );
@@ -232,9 +248,9 @@ int main(int argc, char * argv[])
         mean += delta/(double)count;
         m2 += delta*(cycles - mean);
 #endif
-        //predict_images ();
-        //double score = score_function();
-        //printf("                                     Errors %d %lf \n", T++, score);
+        predict_images ();
+        double score = score_function();
+        dprintf(2,"Errors %d %lf \n", T, score);
         //save_parameters ();
         T++;
     }
