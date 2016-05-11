@@ -105,6 +105,7 @@ for(i in 1:nrow(config)){
   #plots <- c(plot)
   # Store plot
   jpeg(paste("00", name, ".jpeg", sep = ""))
+  print(plot)
   dev.off()
 }
 #multiplot(plotlist = plots, col = 2)
