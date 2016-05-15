@@ -1,0 +1,322 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: disabled
+  -inline-max-per-compile: disabled
+
+
+Begin optimization report for: init_tsc()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (init_tsc()) [1] ./tsc_x86.h(77,17)
+
+===========================================================================
+
+Begin optimization report for: start_tsc()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (start_tsc()) [2] ./tsc_x86.h(81,25)
+
+===========================================================================
+
+Begin optimization report for: stop_tsc(unsigned long long)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (stop_tsc(unsigned long long)) [3] ./tsc_x86.h(88,33)
+
+===========================================================================
+
+Begin optimization report for: uniform()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (uniform()) [4] ././update2_S_O0andManualVec/rbm.h(69,1)
+
+===========================================================================
+
+Begin optimization report for: ReverseInt(int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (ReverseInt(int)) [5] ././update2_S_O0andManualVec/rbm.h(75,1)
+
+===========================================================================
+
+Begin optimization report for: image_pp()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (image_pp()) [6] ././update2_S_O0andManualVec/rbm.h(84,17)
+
+===========================================================================
+
+Begin optimization report for: init_param()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (init_param()) [7] ././update2_S_O0andManualVec/rbm.h(100,1)
+  -> (129,17) uniform()
+  -> (134,17) uniform()
+
+===========================================================================
+
+Begin optimization report for: get_images(int *, unsigned char **, int **, char *, char *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (get_images(int *, unsigned char **, int **, char *, char *)) [8] ././update2_S_O0andManualVec/rbm.h(146,1)
+  -> (179,19) ReverseInt(int)
+  -> (180,15) ReverseInt(int)
+  -> (181,20) ReverseInt(int)
+  -> (182,23) ReverseInt(int)
+  -> (183,27) ReverseInt(int)
+  -> (184,24) ReverseInt(int)
+
+===========================================================================
+
+Begin optimization report for: get_image(int, int *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (get_image(int, int *)) [9] ././update2_S_O0andManualVec/rbm.h(225,1)
+
+===========================================================================
+
+Begin optimization report for: get_label(int, int *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (get_label(int, int *)) [10] ././update2_S_O0andManualVec/rbm.h(233,1)
+
+===========================================================================
+
+Begin optimization report for: check_images_labels(int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (check_images_labels(int, int)) [11] ./helper.h(2,51)
+
+===========================================================================
+
+Begin optimization report for: test_get_img_func(int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (test_get_img_func(int)) [12] ./helper.h(46,35)
+  -> (50,53) get_label(int, int *)
+  -> (52,17) get_image(int, int *)
+
+===========================================================================
+
+Begin optimization report for: sigmoid(double)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (sigmoid(double)) [13] ././update2_S_O0andManualVec/rbm.h(245,1)
+
+===========================================================================
+
+Begin optimization report for: h_update(double *, int, int *, double *, double *, double *, int, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (h_update(double *, int, int *, double *, double *, double *, int, int, int)) [14] ././update2_S_O0andManualVec/rbm.h(256,60)
+  -> (274,16) sigmoid(double)
+
+===========================================================================
+
+Begin optimization report for: W_update(double *, double *, double *, int *, int *, double, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (W_update(double *, double *, double *, int *, int *, double, int, int)) [15] ././update2_S_O0andManualVec/rbm.h(301,64)
+
+===========================================================================
+
+Begin optimization report for: b_update(double *, int *, int *, double, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (b_update(double *, int *, int *, double, int)) [16] ././update2_S_O0andManualVec/rbm.h(313,69)
+
+===========================================================================
+
+Begin optimization report for: c_update(double *, double *, double *, double, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (c_update(double *, double *, double *, double, int)) [17] ././update2_S_O0andManualVec/rbm.h(320,83)
+
+===========================================================================
+
+Begin optimization report for: d_update(double *, int, int, double, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (d_update(double *, int, int, double, int)) [18] ././update2_S_O0andManualVec/rbm.h(397,65)
+
+===========================================================================
+
+Begin optimization report for: U_update(double *, double *, double *, int, int, double, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (U_update(double *, double *, double *, int, int, double, int, int)) [19] ././update2_S_O0andManualVec/rbm.h(409,60)
+
+===========================================================================
+
+Begin optimization report for: COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)) [20] ././update2_S_O0andManualVec/rbm.h(430,1)
+  -> (442,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
+  -> (462,5) gibbs_H(int *, int, int *)
+  -> (477,14) gibbs_Y_(int *, double *, double *, int, int)
+  -> (492,5) gibbs_X_(int *, int *, double *, int, int)
+  -> (509,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
+  -> (525,5) W_update(double *, double *, double *, int *, int *, double, int, int)
+  -> (540,5) b_update(double *, int *, int *, double, int)
+  -> (552,13) start_tsc()
+  -> (554,5) c_update(double *, double *, double *, double, int)
+  -> (556,22) stop_tsc(unsigned long long)
+  -> (569,5) d_update(double *, int, int, double, int)
+  -> (583,5) U_update(double *, double *, double *, int, int, double, int, int)
+
+===========================================================================
+
+Begin optimization report for: COD_train()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (COD_train()) [21] ././update2_S_O0andManualVec/rbm.h(603,1)
+  -> (612,9) COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+  -> (612,29) get_label(int, int *)
+  -> (612,57) get_image(int, int *)
+
+===========================================================================
+
+Begin optimization report for: energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)) [22] ././update2_S_O0andManualVec/rbm.h(637,1)
+
+===========================================================================
+
+Begin optimization report for: energy_for_all()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (energy_for_all()) [23] ././update2_S_O0andManualVec/rbm.h(681,1)
+  -> (688,20) energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+  -> (688,27) get_label(int, int *)
+  -> (688,55) get_image(int, int *)
+
+===========================================================================
+
+Begin optimization report for: gibbs_H(int *, int, int *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (gibbs_H(int *, int, int *)) [24] ././update2_S_O0andManualVec/rbm.h(703,1)
+  -> (712,20) sigmoid(double)
+  -> (713,23) uniform()
+
+===========================================================================
+
+Begin optimization report for: gibbs_Y_(int *, double *, double *, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (gibbs_Y_(int *, double *, double *, int, int)) [25] ././update2_S_O0andManualVec/rbm.h(730,1)
+  -> (749,21) uniform()
+
+===========================================================================
+
+Begin optimization report for: gibbs_X_(int *, int *, double *, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (gibbs_X_(int *, int *, double *, int, int)) [26] ././update2_S_O0andManualVec/rbm.h(776,1)
+  -> (785,20) sigmoid(double)
+  -> (786,25) uniform()
+
+===========================================================================
+
+Begin optimization report for: my_log(double)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (my_log(double)) [27] ./rbm_main.c(12,33)
+
+===========================================================================
+
+Begin optimization report for: Predict_one_image(int *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (Predict_one_image(int *)) [28] ./rbm_main.c(25,31)
+  -> (55,21) my_log(double)
+
+===========================================================================
+
+Begin optimization report for: predict_images()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (predict_images()) [29] ./rbm_main.c(105,24)
+  -> (110,26) Predict_one_image(int *)
+  -> (110,44) get_image(int, int *)
+
+===========================================================================
+
+Begin optimization report for: score_function()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (score_function()) [30] ./rbm_main.c(117,25)
+
+===========================================================================
+
+Begin optimization report for: save_parameters()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (save_parameters()) [31] ./rbm_main.c(133,1)
+
+===========================================================================
+
+Begin optimization report for: read_parameters()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (read_parameters()) [32] ./rbm_main.c(175,23)
+
+===========================================================================
+
+Begin optimization report for: main(int, char **)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (main(int, char **)) [33] ./rbm_main.c(208,1)
+  -> (213,5) get_images(int *, unsigned char **, int **, char *, char *)
+  -> (217,5) get_images(int *, unsigned char **, int **, char *, char *)
+  -> (220,5) image_pp()
+  -> (224,5) init_param()
+  -> (243,9) COD_train()
+  -> (251,9) predict_images()
+  -> (252,24) score_function()
+
+===========================================================================
