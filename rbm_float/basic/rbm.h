@@ -277,7 +277,7 @@ void h_update(double * h, int y0, float * x0, double * c,
 
 
 void W_update(double * W, double * h0_cap, double * h1_cap,
-              int * x0, int * x1, double lambda, int n, int D){
+              float * x0, float * x1, double lambda, int n, int D){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < D; j++)
