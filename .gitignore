@@ -1,4 +1,5 @@
 ./build
-./*.out
-./*.o
-./*measure
+*.out
+*.o
+*measure
+*.DS_store
