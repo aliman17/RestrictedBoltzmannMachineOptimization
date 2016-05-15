@@ -320,10 +320,10 @@ void b_update(double * b, int * x0, int * x1, double lambda, int D) {
 void c_update(double * c, double * h0_cap, double * h1_cap, double lambda, int n) {
 
   // //ORIGINAL CODE
-        // for (int i = 0; i < n; i++)
-        // {
-        // c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
-        // }
+        for (int i = 0; i < n; i++)
+        {
+        c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
+        }
 
     // double sum1, sum2, sum3, sum4;
 
@@ -354,30 +354,30 @@ void c_update(double * c, double * h0_cap, double * h1_cap, double lambda, int n
 
     //     }
 
-     int bound = floor(n / 4.0);
+    //  int bound = floor(n / 4.0);
 
-    //__m256d lambdaVec = _mm256_set1_pd (lambda);
-    __m256d lambdaVec = {lambda,lambda,lambda,lambda};
+    // //__m256d lambdaVec = _mm256_set1_pd (lambda);
+    // __m256d lambdaVec = {lambda,lambda,lambda,lambda};
 
-    for (int i = 0; i < bound; i++)
-    {
-        //loads
-        __m256d cVec , h0Vec,  h1Vec, temp1,res;
-        cVec  = _mm256_loadu_pd(c + i * 4);
-        h0Vec = _mm256_loadu_pd(h0_cap + i * 4);
-        h1Vec = _mm256_loadu_pd(h1_cap + i * 4);
-        //substraction
+    // for (int i = 0; i < bound; i++)
+    // {
+    //     //loads
+    //     __m256d cVec , h0Vec,  h1Vec, temp1,res;
+    //     cVec  = _mm256_loadu_pd(c + i * 4);
+    //     h0Vec = _mm256_loadu_pd(h0_cap + i * 4);
+    //     h1Vec = _mm256_loadu_pd(h1_cap + i * 4);
+    //     //substraction
 
-        temp1 = _mm256_sub_pd(h0Vec, h1Vec);
+    //     temp1 = _mm256_sub_pd(h0Vec, h1Vec);
 
-        //FMA
+    //     //FMA
 
-        res = _mm256_fmadd_pd(lambdaVec, temp1, cVec);
+    //     res = _mm256_fmadd_pd(lambdaVec, temp1, cVec);
 
-        // store
+    //     // store
 
-        _mm256_storeu_pd(c + 4 * i, res);
-    }
+    //     _mm256_storeu_pd(c + 4 * i, res);
+    // }
 
 
 

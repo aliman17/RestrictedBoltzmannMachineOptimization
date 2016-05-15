@@ -9,16 +9,417 @@ INLINING OPTION VALUES:
   -inline-min-size: 30
   -inline-max-size: 230
   -inline-max-total-size: 2000
-  -inline-max-per-routine: disabled
-  -inline-max-per-compile: disabled
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
 
 
-Begin optimization report for: init_tsc()
+Begin optimization report for: main(int, char **)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (init_tsc()) [1] ./tsc_x86.h(77,17)
+INLINE REPORT: (main(int, char **)) [1] ./rbm_main.c(208,1)
+  -> (213,5) get_images(int *, unsigned char **, int **, char *, char *)
+  -> (217,5) get_images(int *, unsigned char **, int **, char *, char *)
+  -> INLINE: (220,5) image_pp()
+  -> INLINE: (224,5) init_param()
+    -> INLINE: ././update2_S_O0andManualVec/rbm.h:(129,17) uniform()
+    -> INLINE: ././update2_S_O0andManualVec/rbm.h:(134,17) uniform()
+  -> INLINE: (243,9) COD_train()
+    -> INLINE: ././update2_S_O0andManualVec/rbm.h:(637,9) COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+      -> INLINE: (467,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
+        -> INLINE: (274,16) sigmoid(double)
+      -> INLINE: (487,5) gibbs_H(int *, int, int *)
+        -> INLINE: (737,20) sigmoid(double)
+        -> INLINE: (738,23) uniform()
+      -> INLINE: (502,14) gibbs_Y_(int *, double *, double *, int, int)
+        -> INLINE: (774,21) uniform()
+      -> INLINE: (517,5) gibbs_X_(int *, int *, double *, int, int)
+        -> INLINE: (810,20) sigmoid(double)
+        -> INLINE: (811,25) uniform()
+      -> INLINE: (534,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
+        -> INLINE: (274,16) sigmoid(double)
+      -> (548,13) start_tsc()
+      -> INLINE: (550,5) W_update(double *, double *, double *, int *, int *, double, int, int)
+      -> (552,22) stop_tsc(unsigned long long)
+      -> INLINE: (565,5) b_update(double *, int *, int *, double, int)
+      -> INLINE: (579,5) c_update(double *, double *, double *, double, int)
+      -> INLINE: (594,5) d_update(double *, int, int, double, int)
+      -> INLINE: (608,5) U_update(double *, double *, double *, int, int, double, int, int)
+    -> INLINE: ././update2_S_O0andManualVec/rbm.h:(637,29) get_label(int, int *)
+    -> INLINE: ././update2_S_O0andManualVec/rbm.h:(637,57) get_image(int, int *)
+  -> INLINE: (251,9) predict_images()
+    -> INLINE: (110,26) Predict_one_image(int *)
+      -> INLINE: (55,21) my_log(double)
+    -> INLINE: (110,44) get_image(int, int *)
+  -> INLINE: (252,24) score_function()
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(89,5) inlined into ./rbm_main.c(220,5)
+   remark #15523: loop was not vectorized: loop control variable _i.830 was found, but loop iteration count cannot be computed before executing the loop
+   remark #25478: While Loop Unrolled by 8  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(93,5) inlined into ./rbm_main.c(220,5)
+   remark #15523: loop was not vectorized: loop control variable _i.832 was found, but loop iteration count cannot be computed before executing the loop
+   remark #25478: While Loop Unrolled by 8  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(110,5) inlined into ./rbm_main.c(224,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 111 and  line 111
+   remark #25438: unrolled without remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(114,5) inlined into ./rbm_main.c(224,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 115 and  line 115
+   remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(114,5) inlined into ./rbm_main.c(224,5)
+<Remainder>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(118,5) inlined into ./rbm_main.c(224,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 119 and  line 119
+   remark #25436: completely unrolled by 10  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(128,5) inlined into ./rbm_main.c(224,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 129 and  line 129
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(133,5) inlined into ./rbm_main.c(224,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 134 and  line 134
+LOOP END
+
+LOOP BEGIN at ./rbm_main.c(234,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(630,5) inlined into ./rbm_main.c(243,9)
+      remark #15542: loop was not vectorized: inner loop was already vectorized
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(259,5) inlined into ./rbm_main.c(243,9)
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ./rbm_main.c(243,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(269,9) inlined into ./rbm_main.c(243,9)
+            remark #25436: completely unrolled by 10   (pre-vector) 
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(729,5) inlined into ./rbm_main.c(243,9)
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(732,9) inlined into ./rbm_main.c(243,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ./rbm_main.c(243,9)
+         remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+         <Peeled loop for vectorization>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization>
+            remark #15301: REMAINDER LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization>
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ./rbm_main.c(243,9)
+      <Remainder>
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+         <Peeled loop for vectorization>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization>
+            remark #15301: REMAINDER LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization>
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5) inlined into ./rbm_main.c(243,9)
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization>
+         remark #15301: REMAINDER LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(778,5) inlined into ./rbm_main.c(243,9)
+         remark #15521: loop was not vectorized: loop control variable was not identified. Explicitly compute the iteration count before executing the loop or try using canonical loop form
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(802,5) inlined into ./rbm_main.c(243,9)
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ./rbm_main.c(243,9)
+         <Peeled loop for vectorization>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ./rbm_main.c(243,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization>
+            remark #15301: REMAINDER LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization>
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(259,5) inlined into ./rbm_main.c(243,9)
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ./rbm_main.c(243,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(269,9) inlined into ./rbm_main.c(243,9)
+            remark #25436: completely unrolled by 10   (pre-vector) 
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(302,5) inlined into ./rbm_main.c(243,9)
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ./rbm_main.c(243,9)
+         <Peeled loop for vectorization, Multiversioned v1>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ./rbm_main.c(243,9)
+         <Multiversioned v1>
+            remark #25228: Loop multiversioned for Data Dependence
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization, Multiversioned v1>
+            remark #15301: REMAINDER LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization, Multiversioned v1>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ./rbm_main.c(243,9)
+         <Multiversioned v2>
+            remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ./rbm_main.c(243,9)
+      <Peeled loop for vectorization, Multiversioned v1>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ./rbm_main.c(243,9)
+      <Multiversioned v1>
+         remark #25228: Loop multiversioned for Data Dependence
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Multiversioned v1>
+         remark #15301: REMAINDER LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Multiversioned v1>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ./rbm_main.c(243,9)
+      <Multiversioned v2>
+         remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ./rbm_main.c(243,9)
+      <Peeled loop for vectorization, Multiversioned v1>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ./rbm_main.c(243,9)
+      <Multiversioned v1>
+         remark #25228: Loop multiversioned for Data Dependence
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Multiversioned v1>
+         remark #15301: REMAINDER LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Multiversioned v1>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ./rbm_main.c(243,9)
+      <Multiversioned v2>
+         remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Peeled loop for vectorization, Predicate Optimized v1>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Predicate Optimized v1>
+         remark #25423: Condition at line 425 hoisted out of this loop
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Predicate Optimized v1>
+         remark #15301: REMAINDER LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Predicate Optimized v1>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Peeled loop for vectorization, Predicate Optimized v2>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Predicate Optimized v2>
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Predicate Optimized v2>
+         remark #15301: REMAINDER LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(423,5) inlined into ./rbm_main.c(243,9)
+      <Remainder loop for vectorization, Predicate Optimized v2>
+      LOOP END
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(435,5) inlined into ./rbm_main.c(243,9)
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Peeled loop for vectorization, Predicate Optimized v1>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Predicate Optimized v1>
+            remark #25423: Condition at line 439 hoisted out of this loop
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization, Predicate Optimized v1>
+            remark #15301: REMAINDER LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization, Predicate Optimized v1>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Peeled loop for vectorization, Predicate Optimized v2>
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Predicate Optimized v2>
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization, Predicate Optimized v2>
+            remark #15301: REMAINDER LOOP WAS VECTORIZED
+         LOOP END
+
+         LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ./rbm_main.c(243,9)
+         <Remainder loop for vectorization, Predicate Optimized v2>
+         LOOP END
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(108,5) inlined into ./rbm_main.c(251,9)
+      remark #15542: loop was not vectorized: inner loop was already vectorized
+
+      LOOP BEGIN at ./rbm_main.c(36,5) inlined into ./rbm_main.c(251,9)
+         remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ./rbm_main.c(38,9) inlined into ./rbm_main.c(251,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ./rbm_main.c(36,5) inlined into ./rbm_main.c(251,9)
+      <Remainder>
+         remark #15542: loop was not vectorized: inner loop was already vectorized
+
+         LOOP BEGIN at ./rbm_main.c(38,9) inlined into ./rbm_main.c(251,9)
+            remark #15300: LOOP WAS VECTORIZED
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ./rbm_main.c(50,5) inlined into ./rbm_main.c(251,9)
+         remark #15310: loop was not vectorized: operation cannot be vectorized   [ ./rbm_main.c(55,21) ]
+
+         LOOP BEGIN at ./rbm_main.c(52,9) inlined into ./rbm_main.c(251,9)
+            remark #15310: loop was not vectorized: operation cannot be vectorized   [ ./rbm_main.c(55,21) ]
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at ./rbm_main.c(82,5) inlined into ./rbm_main.c(251,9)
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at ./rbm_main.c(82,5) inlined into ./rbm_main.c(251,9)
+      <Remainder loop for vectorization>
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(120,5) inlined into ./rbm_main.c(252,24)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(120,5) inlined into ./rbm_main.c(252,24)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(120,5) inlined into ./rbm_main.c(252,24)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: start_tsc()
@@ -29,12 +430,38 @@ INLINE REPORT: (start_tsc()) [2] ./tsc_x86.h(81,25)
 
 ===========================================================================
 
-Begin optimization report for: stop_tsc(unsigned long long)
+Begin optimization report for: get_images(int *, unsigned char **, int **, char *, char *)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (stop_tsc(unsigned long long)) [3] ./tsc_x86.h(88,33)
+INLINE REPORT: (get_images(int *, unsigned char **, int **, char *, char *)) [3] ././update2_S_O0andManualVec/rbm.h(146,1)
+  -> INLINE: (179,19) ReverseInt(int)
+  -> INLINE: (180,15) ReverseInt(int)
+  -> INLINE: (181,20) ReverseInt(int)
+  -> INLINE: (182,23) ReverseInt(int)
+  -> INLINE: (183,27) ReverseInt(int)
+  -> INLINE: (184,24) ReverseInt(int)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(205,5)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(205,5)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(205,5)
+<Remainder loop for vectorization>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(205,5)
+<Remainder loop for vectorization>
+LOOP END
 ===========================================================================
 
 Begin optimization report for: uniform()
@@ -59,37 +486,26 @@ Begin optimization report for: image_pp()
 
 INLINE REPORT: (image_pp()) [6] ././update2_S_O0andManualVec/rbm.h(84,17)
 
-===========================================================================
 
-Begin optimization report for: init_param()
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
 
-    Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (init_param()) [7] ././update2_S_O0andManualVec/rbm.h(100,1)
-  -> (129,17) uniform()
-  -> (134,17) uniform()
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(89,5)
+   remark #15523: loop was not vectorized: loop control variable _i.830 was found, but loop iteration count cannot be computed before executing the loop
+   remark #25478: While Loop Unrolled by 8  
+LOOP END
 
-===========================================================================
-
-Begin optimization report for: get_images(int *, unsigned char **, int **, char *, char *)
-
-    Report from: Interprocedural optimizations [ipo]
-
-INLINE REPORT: (get_images(int *, unsigned char **, int **, char *, char *)) [8] ././update2_S_O0andManualVec/rbm.h(146,1)
-  -> (179,19) ReverseInt(int)
-  -> (180,15) ReverseInt(int)
-  -> (181,20) ReverseInt(int)
-  -> (182,23) ReverseInt(int)
-  -> (183,27) ReverseInt(int)
-  -> (184,24) ReverseInt(int)
-
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(93,5)
+   remark #15523: loop was not vectorized: loop control variable _i.832 was found, but loop iteration count cannot be computed before executing the loop
+   remark #25478: While Loop Unrolled by 8  
+LOOP END
 ===========================================================================
 
 Begin optimization report for: get_image(int, int *)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (get_image(int, int *)) [9] ././update2_S_O0andManualVec/rbm.h(225,1)
+INLINE REPORT: (get_image(int, int *)) [7] ././update2_S_O0andManualVec/rbm.h(225,1)
 
 ===========================================================================
 
@@ -97,7 +513,7 @@ Begin optimization report for: get_label(int, int *)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (get_label(int, int *)) [10] ././update2_S_O0andManualVec/rbm.h(233,1)
+INLINE REPORT: (get_label(int, int *)) [8] ././update2_S_O0andManualVec/rbm.h(233,1)
 
 ===========================================================================
 
@@ -105,25 +521,58 @@ Begin optimization report for: check_images_labels(int, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (check_images_labels(int, int)) [11] ./helper.h(2,51)
+INLINE REPORT: (check_images_labels(int, int)) [9] ./helper.h(2,51)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ./helper.h(11,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 14 and  line 17
+
+   LOOP BEGIN at ./helper.h(12,9)
+      remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ./helper.h(29,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 32 and  line 35
+
+   LOOP BEGIN at ./helper.h(30,9)
+      remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: test_get_img_func(int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (test_get_img_func(int)) [12] ./helper.h(46,35)
-  -> (50,53) get_label(int, int *)
-  -> (52,17) get_image(int, int *)
+INLINE REPORT: (test_get_img_func(int)) [10] ./helper.h(46,35)
+  -> INLINE: (50,53) get_label(int, int *)
+  -> INLINE: (52,17) get_image(int, int *)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ./helper.h(53,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 56 and  line 59
+
+   LOOP BEGIN at ./helper.h(54,9)
+      remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: sigmoid(double)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (sigmoid(double)) [13] ././update2_S_O0andManualVec/rbm.h(245,1)
+INLINE REPORT: (sigmoid(double)) [11] ././update2_S_O0andManualVec/rbm.h(245,1)
 
 ===========================================================================
 
@@ -131,40 +580,141 @@ Begin optimization report for: h_update(double *, int, int *, double *, double *
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (h_update(double *, int, int *, double *, double *, double *, int, int, int)) [14] ././update2_S_O0andManualVec/rbm.h(256,60)
-  -> (274,16) sigmoid(double)
+INLINE REPORT: (h_update(double *, int, int *, double *, double *, double *, int, int, int)) [12] ././update2_S_O0andManualVec/rbm.h(256,60)
+  -> INLINE: (274,16) sigmoid(double)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(259,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: W_update(double *, double *, double *, int *, int *, double, int, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (W_update(double *, double *, double *, int *, int *, double, int, int)) [15] ././update2_S_O0andManualVec/rbm.h(301,64)
+INLINE REPORT: (W_update(double *, double *, double *, int *, int *, double, int, int)) [13] ././update2_S_O0andManualVec/rbm.h(301,64)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(302,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 306 and  line 306
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9)
+      remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+      remark #15346: vector dependence: assumed FLOW dependence between  line 306 and  line 306
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: b_update(double *, int *, int *, double, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (b_update(double *, int *, int *, double, int)) [16] ././update2_S_O0andManualVec/rbm.h(313,69)
+INLINE REPORT: (b_update(double *, int *, int *, double, int)) [14] ././update2_S_O0andManualVec/rbm.h(313,69)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5)
+<Peeled loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5)
+<Multiversioned v1>
+   remark #25228: Loop multiversioned for Data Dependence
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5)
+<Remainder loop for vectorization, Multiversioned v1>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5)
+<Remainder loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5)
+<Multiversioned v2>
+   remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+   remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5)
+<Remainder, Multiversioned v2>
+LOOP END
 ===========================================================================
 
 Begin optimization report for: c_update(double *, double *, double *, double, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (c_update(double *, double *, double *, double, int)) [17] ././update2_S_O0andManualVec/rbm.h(320,83)
+INLINE REPORT: (c_update(double *, double *, double *, double, int)) [15] ././update2_S_O0andManualVec/rbm.h(320,83)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9)
+<Peeled loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9)
+<Multiversioned v1>
+   remark #25228: Loop multiversioned for Data Dependence
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9)
+<Remainder loop for vectorization, Multiversioned v1>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9)
+<Remainder loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9)
+<Multiversioned v2>
+   remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+   remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9)
+<Remainder, Multiversioned v2>
+LOOP END
 ===========================================================================
 
 Begin optimization report for: d_update(double *, int, int, double, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (d_update(double *, int, int, double, int)) [18] ././update2_S_O0andManualVec/rbm.h(397,65)
+INLINE REPORT: (d_update(double *, int, int, double, int)) [16] ././update2_S_O0andManualVec/rbm.h(422,65)
 
 ===========================================================================
 
@@ -172,94 +722,710 @@ Begin optimization report for: U_update(double *, double *, double *, int, int, 
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (U_update(double *, double *, double *, int, int, double, int, int)) [19] ././update2_S_O0andManualVec/rbm.h(409,60)
+INLINE REPORT: (U_update(double *, double *, double *, int, int, double, int, int)) [17] ././update2_S_O0andManualVec/rbm.h(434,60)
 
-===========================================================================
 
-Begin optimization report for: COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
 
-    Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)) [20] ././update2_S_O0andManualVec/rbm.h(430,1)
-  -> (442,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
-  -> (462,5) gibbs_H(int *, int, int *)
-  -> (477,14) gibbs_Y_(int *, double *, double *, int, int)
-  -> (492,5) gibbs_X_(int *, int *, double *, int, int)
-  -> (509,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
-  -> (525,5) W_update(double *, double *, double *, int *, int *, double, int, int)
-  -> (540,5) b_update(double *, int *, int *, double, int)
-  -> (552,13) start_tsc()
-  -> (554,5) c_update(double *, double *, double *, double, int)
-  -> (556,22) stop_tsc(unsigned long long)
-  -> (569,5) d_update(double *, int, int, double, int)
-  -> (583,5) U_update(double *, double *, double *, int, int, double, int, int)
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(435,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 443 and  line 443
 
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9)
+   <Predicate Optimized v1>
+      remark #25423: Condition at line 439 hoisted out of this loop
+      remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+      remark #15346: vector dependence: assumed FLOW dependence between  line 443 and  line 443
+      remark #25439: unrolled with remainder by 2  
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9)
+   <Remainder, Predicate Optimized v1>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9)
+   <Predicate Optimized v2>
+      remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+      remark #15346: vector dependence: assumed FLOW dependence between  line 443 and  line 443
+      remark #25439: unrolled with remainder by 2  
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9)
+   <Remainder, Predicate Optimized v2>
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: COD_train()
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (COD_train()) [21] ././update2_S_O0andManualVec/rbm.h(603,1)
-  -> (612,9) COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
-  -> (612,29) get_label(int, int *)
-  -> (612,57) get_image(int, int *)
+INLINE REPORT: (COD_train()) [18] ././update2_S_O0andManualVec/rbm.h(628,1)
+  -> (637,9) COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+  -> INLINE: (637,29) get_label(int, int *)
+  -> INLINE: (637,57) get_image(int, int *)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(630,5)
+   remark #15523: loop was not vectorized: loop control variable _i.901 was found, but loop iteration count cannot be computed before executing the loop
+   remark #25456: Number of Array Refs Scalar Replaced In Loop: 1
+LOOP END
+===========================================================================
+
+Begin optimization report for: COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (COD_training_update(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)) [19] ././update2_S_O0andManualVec/rbm.h(455,1)
+  -> INLINE: (467,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
+    -> INLINE: (274,16) sigmoid(double)
+  -> INLINE: (487,5) gibbs_H(int *, int, int *)
+    -> INLINE: (737,20) sigmoid(double)
+    -> INLINE: (738,23) uniform()
+  -> INLINE: (502,14) gibbs_Y_(int *, double *, double *, int, int)
+    -> INLINE: (774,21) uniform()
+  -> INLINE: (517,5) gibbs_X_(int *, int *, double *, int, int)
+    -> INLINE: (810,20) sigmoid(double)
+    -> INLINE: (811,25) uniform()
+  -> INLINE: (534,5) h_update(double *, int, int *, double *, double *, double *, int, int, int)
+    -> INLINE: (274,16) sigmoid(double)
+  -> (548,13) start_tsc()
+  -> INLINE: (550,5) W_update(double *, double *, double *, int *, int *, double, int, int)
+  -> (552,22) stop_tsc(unsigned long long)
+  -> INLINE: (565,5) b_update(double *, int *, int *, double, int)
+  -> INLINE: (579,5) c_update(double *, double *, double *, double, int)
+  -> INLINE: (594,5) d_update(double *, int, int, double, int)
+  -> INLINE: (608,5) U_update(double *, double *, double *, int, int, double, int, int)
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(259,5) inlined into ././update2_S_O0andManualVec/rbm.h(468,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(468,5)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(468,5)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(468,5)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(468,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(729,5) inlined into ././update2_S_O0andManualVec/rbm.h(488,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(732,9) inlined into ././update2_S_O0andManualVec/rbm.h(488,5)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Distributed chunk1>
+   remark #25426: Loop Distributed (2 way) 
+   remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Remainder, Distributed chunk1>
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Peeled loop for vectorization, Distributed chunk2>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Distributed chunk2>
+   remark #15301: PARTIAL LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Remainder loop for vectorization, Distributed chunk2>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Remainder loop for vectorization, Distributed chunk2>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Remainder loop for vectorization>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+<Remainder loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(778,5) inlined into ././update2_S_O0andManualVec/rbm.h(503,14)
+   remark #15520: loop was not vectorized: loop with multiple exits cannot be vectorized unless it meets search loop idiom criteria
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(802,5) inlined into ././update2_S_O0andManualVec/rbm.h(518,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ././update2_S_O0andManualVec/rbm.h(518,5)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ././update2_S_O0andManualVec/rbm.h(518,5)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ././update2_S_O0andManualVec/rbm.h(518,5)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9) inlined into ././update2_S_O0andManualVec/rbm.h(518,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(259,5) inlined into ././update2_S_O0andManualVec/rbm.h(535,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(535,5)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(535,5)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(535,5)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(262,9) inlined into ././update2_S_O0andManualVec/rbm.h(535,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(302,5) inlined into ././update2_S_O0andManualVec/rbm.h(551,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ././update2_S_O0andManualVec/rbm.h(551,5)
+   <Peeled loop for vectorization, Multiversioned v1>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ././update2_S_O0andManualVec/rbm.h(551,5)
+   <Multiversioned v1>
+      remark #25228: Loop multiversioned for Data Dependence
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ././update2_S_O0andManualVec/rbm.h(551,5)
+   <Remainder loop for vectorization, Multiversioned v1>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ././update2_S_O0andManualVec/rbm.h(551,5)
+   <Remainder loop for vectorization, Multiversioned v1>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(304,9) inlined into ././update2_S_O0andManualVec/rbm.h(551,5)
+   <Multiversioned v2>
+      remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ././update2_S_O0andManualVec/rbm.h(566,5)
+<Peeled loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ././update2_S_O0andManualVec/rbm.h(566,5)
+<Multiversioned v1>
+   remark #25228: Loop multiversioned for Data Dependence
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ././update2_S_O0andManualVec/rbm.h(566,5)
+<Remainder loop for vectorization, Multiversioned v1>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ././update2_S_O0andManualVec/rbm.h(566,5)
+<Remainder loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ././update2_S_O0andManualVec/rbm.h(566,5)
+<Multiversioned v2>
+   remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+   remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(314,5) inlined into ././update2_S_O0andManualVec/rbm.h(566,5)
+<Remainder, Multiversioned v2>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ././update2_S_O0andManualVec/rbm.h(580,5)
+<Peeled loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ././update2_S_O0andManualVec/rbm.h(580,5)
+<Multiversioned v1>
+   remark #25228: Loop multiversioned for Data Dependence
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ././update2_S_O0andManualVec/rbm.h(580,5)
+<Remainder loop for vectorization, Multiversioned v1>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ././update2_S_O0andManualVec/rbm.h(580,5)
+<Remainder loop for vectorization, Multiversioned v1>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ././update2_S_O0andManualVec/rbm.h(580,5)
+<Multiversioned v2>
+   remark #15304: loop was not vectorized: non-vectorizable loop instance from multiversioning
+   remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(323,9) inlined into ././update2_S_O0andManualVec/rbm.h(580,5)
+<Remainder, Multiversioned v2>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(435,5) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Peeled loop for vectorization, Predicate Optimized v1>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Predicate Optimized v1>
+      remark #25423: Condition at line 439 hoisted out of this loop
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Remainder loop for vectorization, Predicate Optimized v1>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Remainder loop for vectorization, Predicate Optimized v1>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Peeled loop for vectorization, Predicate Optimized v2>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Predicate Optimized v2>
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Remainder loop for vectorization, Predicate Optimized v2>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(437,9) inlined into ././update2_S_O0andManualVec/rbm.h(609,5)
+   <Remainder loop for vectorization, Predicate Optimized v2>
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)) [22] ././update2_S_O0andManualVec/rbm.h(637,1)
+INLINE REPORT: (energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)) [20] ././update2_S_O0andManualVec/rbm.h(662,1)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(668,5)
+   remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(668,5)
+<Remainder>
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(681,5)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(681,5)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(681,5)
+<Remainder loop for vectorization>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(681,5)
+<Remainder loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5)
+<Remainder loop for vectorization>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5)
+<Remainder loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5)
+<Remainder loop for vectorization>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5)
+<Remainder loop for vectorization>
+LOOP END
 ===========================================================================
 
 Begin optimization report for: energy_for_all()
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (energy_for_all()) [23] ././update2_S_O0andManualVec/rbm.h(681,1)
-  -> (688,20) energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
-  -> (688,27) get_label(int, int *)
-  -> (688,55) get_image(int, int *)
+INLINE REPORT: (energy_for_all()) [21] ././update2_S_O0andManualVec/rbm.h(706,1)
+  -> INLINE: (713,20) energy(int, int *, double *, double *, double *, double *, double *, double *, int, int, int)
+  -> INLINE: (713,27) get_label(int, int *)
+  -> INLINE: (713,55) get_image(int, int *)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(709,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(668,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+      remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+      remark #15542: loop was not vectorized: inner loop was already vectorized
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(668,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+   <Remainder>
+      remark #15542: loop was not vectorized: inner loop was already vectorized
+
+      LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(672,9) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(681,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(687,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+   <Remainder loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(696,5) inlined into ././update2_S_O0andManualVec/rbm.h(714,20)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: gibbs_H(int *, int, int *)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (gibbs_H(int *, int, int *)) [24] ././update2_S_O0andManualVec/rbm.h(703,1)
-  -> (712,20) sigmoid(double)
-  -> (713,23) uniform()
+INLINE REPORT: (gibbs_H(int *, int, int *)) [22] ././update2_S_O0andManualVec/rbm.h(728,1)
+  -> INLINE: (737,20) sigmoid(double)
+  -> INLINE: (738,23) uniform()
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(729,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(732,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: gibbs_Y_(int *, double *, double *, int, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (gibbs_Y_(int *, double *, double *, int, int)) [25] ././update2_S_O0andManualVec/rbm.h(730,1)
-  -> (749,21) uniform()
+INLINE REPORT: (gibbs_Y_(int *, double *, double *, int, int)) [23] ././update2_S_O0andManualVec/rbm.h(755,1)
+  -> INLINE: (774,21) uniform()
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5)
+<Distributed chunk1>
+   remark #25426: Loop Distributed (2 way) 
+   remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5)
+<Remainder, Distributed chunk1>
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(761,9)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5)
+<Peeled loop for vectorization, Distributed chunk2>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5)
+<Distributed chunk2>
+   remark #15301: PARTIAL LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5)
+<Remainder loop for vectorization, Distributed chunk2>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(758,5)
+<Remainder loop for vectorization, Distributed chunk2>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5)
+<Remainder loop for vectorization>
+   remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(769,5)
+<Remainder loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(778,5)
+   remark #15520: loop was not vectorized: loop with multiple exits cannot be vectorized unless it meets search loop idiom criteria
+LOOP END
 ===========================================================================
 
 Begin optimization report for: gibbs_X_(int *, int *, double *, int, int)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (gibbs_X_(int *, int *, double *, int, int)) [26] ././update2_S_O0andManualVec/rbm.h(776,1)
-  -> (785,20) sigmoid(double)
-  -> (786,25) uniform()
+INLINE REPORT: (gibbs_X_(int *, int *, double *, int, int)) [24] ././update2_S_O0andManualVec/rbm.h(801,1)
+  -> INLINE: (810,20) sigmoid(double)
+  -> INLINE: (811,25) uniform()
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(802,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9)
+   <Remainder loop for vectorization>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(805,9)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: my_log(double)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (my_log(double)) [27] ./rbm_main.c(12,33)
+INLINE REPORT: (my_log(double)) [25] ./rbm_main.c(12,33)
 
 ===========================================================================
 
@@ -267,34 +1433,130 @@ Begin optimization report for: Predict_one_image(int *)
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (Predict_one_image(int *)) [28] ./rbm_main.c(25,31)
-  -> (55,21) my_log(double)
+INLINE REPORT: (Predict_one_image(int *)) [26] ./rbm_main.c(25,31)
+  -> INLINE: (55,21) my_log(double)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ./rbm_main.c(36,5)
+   remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ./rbm_main.c(38,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ./rbm_main.c(36,5)
+<Remainder>
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ./rbm_main.c(38,9)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ./rbm_main.c(50,5)
+   remark #15310: loop was not vectorized: operation cannot be vectorized   [ ./rbm_main.c(55,21) ]
+
+   LOOP BEGIN at ./rbm_main.c(52,9)
+      remark #15310: loop was not vectorized: operation cannot be vectorized   [ ./rbm_main.c(55,21) ]
+   LOOP END
+LOOP END
+
+LOOP BEGIN at ./rbm_main.c(82,5)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ./rbm_main.c(82,5)
+<Remainder loop for vectorization>
+   remark #25436: completely unrolled by 1  
+LOOP END
 ===========================================================================
 
 Begin optimization report for: predict_images()
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (predict_images()) [29] ./rbm_main.c(105,24)
-  -> (110,26) Predict_one_image(int *)
-  -> (110,44) get_image(int, int *)
+INLINE REPORT: (predict_images()) [27] ./rbm_main.c(105,24)
+  -> INLINE: (110,26) Predict_one_image(int *)
+    -> INLINE: (55,21) my_log(double)
+  -> INLINE: (110,44) get_image(int, int *)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ./rbm_main.c(108,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at ./rbm_main.c(36,5) inlined into ./rbm_main.c(110,26)
+      remark #25461: Imperfect Loop Unroll-Jammed by 2   (pre-vector) 
+      remark #15542: loop was not vectorized: inner loop was already vectorized
+
+      LOOP BEGIN at ./rbm_main.c(38,9) inlined into ./rbm_main.c(110,26)
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(36,5) inlined into ./rbm_main.c(110,26)
+   <Remainder>
+      remark #15542: loop was not vectorized: inner loop was already vectorized
+
+      LOOP BEGIN at ./rbm_main.c(38,9) inlined into ./rbm_main.c(110,26)
+         remark #15300: LOOP WAS VECTORIZED
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(50,5) inlined into ./rbm_main.c(110,26)
+      remark #15310: loop was not vectorized: operation cannot be vectorized   [ ./rbm_main.c(55,21) ]
+
+      LOOP BEGIN at ./rbm_main.c(52,9) inlined into ./rbm_main.c(110,26)
+         remark #15310: loop was not vectorized: operation cannot be vectorized   [ ./rbm_main.c(55,21) ]
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(82,5) inlined into ./rbm_main.c(110,26)
+      remark #15300: LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at ./rbm_main.c(82,5) inlined into ./rbm_main.c(110,26)
+   <Remainder loop for vectorization>
+      remark #25436: completely unrolled by 1  
+   LOOP END
+LOOP END
 ===========================================================================
 
 Begin optimization report for: score_function()
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (score_function()) [30] ./rbm_main.c(117,25)
+INLINE REPORT: (score_function()) [28] ./rbm_main.c(117,25)
 
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ./rbm_main.c(120,5)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at ./rbm_main.c(120,5)
+   remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at ./rbm_main.c(120,5)
+<Remainder loop for vectorization>
+LOOP END
 ===========================================================================
 
 Begin optimization report for: save_parameters()
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (save_parameters()) [31] ./rbm_main.c(133,1)
+INLINE REPORT: (save_parameters()) [29] ./rbm_main.c(133,1)
 
 ===========================================================================
 
@@ -302,21 +1564,67 @@ Begin optimization report for: read_parameters()
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (read_parameters()) [32] ./rbm_main.c(175,23)
+INLINE REPORT: (read_parameters()) [30] ./rbm_main.c(175,23)
 
 ===========================================================================
 
-Begin optimization report for: main(int, char **)
+Begin optimization report for: init_param()
 
     Report from: Interprocedural optimizations [ipo]
 
-INLINE REPORT: (main(int, char **)) [33] ./rbm_main.c(208,1)
-  -> (213,5) get_images(int *, unsigned char **, int **, char *, char *)
-  -> (217,5) get_images(int *, unsigned char **, int **, char *, char *)
-  -> (220,5) image_pp()
-  -> (224,5) init_param()
-  -> (243,9) COD_train()
-  -> (251,9) predict_images()
-  -> (252,24) score_function()
+INLINE REPORT: (init_param()) [31] ././update2_S_O0andManualVec/rbm.h(100,1)
+  -> INLINE: (129,17) uniform()
+  -> INLINE: (134,17) uniform()
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(110,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 111 and  line 111
+   remark #25438: unrolled without remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(114,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 115 and  line 115
+   remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(114,5)
+<Remainder>
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(118,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 119 and  line 119
+   remark #25436: completely unrolled by 10  
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(128,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 129 and  line 129
+LOOP END
+
+LOOP BEGIN at ././update2_S_O0andManualVec/rbm.h(133,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed FLOW dependence between  line 134 and  line 134
+LOOP END
+===========================================================================
+
+Begin optimization report for: stop_tsc(unsigned long long)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (stop_tsc(unsigned long long)) [32] ./tsc_x86.h(88,33)
+
+===========================================================================
+
+Begin optimization report for: init_tsc()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (init_tsc()) [33] ./tsc_x86.h(77,17)
 
 ===========================================================================

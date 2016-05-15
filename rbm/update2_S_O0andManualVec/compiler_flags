@@ -1,1 +1,1 @@
--O0 -march=core-avx2 -fma -qopt-report
+-O3 -march=core-avx2 -fma -qopt-report
