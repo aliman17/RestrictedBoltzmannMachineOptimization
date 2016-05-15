@@ -1,7 +1,7 @@
 #!/bin/sh
 
-echo $2 > compiler_flags
-
+echo $2 > $1/compiler_flags
+rm $1/PERF*
 FILE=$1/config
 while read line; do
     initial="$(echo $line | head -c 1)"
@@ -10,7 +10,7 @@ while read line; do
         tag=`echo $line | sed 's/ .*//'`
         echo $tag
         gcc ./rbm_main.c -I./$1 -I. $2 -o $1/measure -D$tag
-        c=100
+        c=200
         printf "" > $1/$tag
         while ((c<=800))
         do
