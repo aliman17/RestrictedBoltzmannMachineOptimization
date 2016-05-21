@@ -379,7 +379,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    int y1 = gibbs_Y_(h0, U, d, K, n);
+    int y1 = gibbs_Y_();
 #ifdef PERF_GIBBS_Y
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
