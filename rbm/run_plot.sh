@@ -16,7 +16,7 @@ while read line; do
 >>>>>>> d67faa253c49f7fd9f4a2ccfb01c829b5750e37c
         c=200
         printf "" > $1/$tag
-        while ((c<=2000))
+        while ((c<=800))
         do
             echo $c
             ./$1/measure $c >> $1/$tag
