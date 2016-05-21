@@ -9,10 +9,10 @@ while read line; do
     then
         tag=`echo $line | sed 's/ .*//'`
         echo $tag
-        gcc-5 ./rbm_main.c -I./$1 -I. $2 -o $1/measure -D$tag
+        gcc ./rbm_main.c -I./$1 -I. $2 -o $1/measure -D$tag
         c=200
         printf "" > $1/$tag
-        while ((c<=2000))
+        while ((c<=800))
         do
             echo $c
             ./$1/measure $c >> $1/$tag

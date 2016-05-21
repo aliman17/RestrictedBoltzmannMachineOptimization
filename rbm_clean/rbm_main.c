@@ -52,7 +52,7 @@ int Predict_one_image(int *x) {
         for (int j = 0; j < n; j++) {
             
             //prod += log((1 + exp(U[j * K + y] + precomValues[j])));
-            prod += my_log(U[y * n + j] + precomValues[j]);
+            prod += my_log(U[j * K + y] + precomValues[j]);
             //prod += U[j * K + y] + precomValues[j];
             
             //printf("NUM: %f,  %f,  %f\n", U[j * K + y], precomValues[j], exp(U[j * K + y] + precomValues[j])   );
