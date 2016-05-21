@@ -9,6 +9,12 @@ if (length(args)!=1) {
   setwd(current_dir)
 }
 
+ghz = 1.6
+bandwidth = 25 #G
+peak_performance <- 16              # Set peak performance
+old_peak_performance <- 4
+
+
 #folder <- args[2]
 
 # Set working directory to the folder with measuring data
@@ -64,29 +70,36 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   }
 }
 
-plot_perf <- function(name, n_koef, n_intercept){
+plot_roofline <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_byte, intercept_byte)
+{
   cod <- read.table(name)             # Load table
   n <- cod[,1]                        # Get n
   cycles <- cod[,2]                   # Get cycles
   flops <- n_koef * n + n_intercept   # Compute flops 
   perf <- flops / cycles              # Get performance
-  peak_performance <- 16              # Set peak performance
-  old_peak_performance <- 4
- 
-  perf_proc <- perf/peak_performance * 100
+  
+  cost <- n_cost * n + intercept_cost
+  byte <- n_byte * n + intercept_byte
+  
+  op.intensity <- cost/byte
+  PI <- bandwidth / ghz
+  
+  perf_proc <- perf
 
   # Plot
-  p <- qplot(n, perf_proc, 
+  p <- qplot(log2(op.intensity), log2(perf_proc), 
         xlab = "Number of hidden layers", 
-        ylab = "% of peak performance", geom = "path",
-        ylim = c(0, 100),
+        ylab = "% of peak performance",
+        #ylim = c(0, 100),
         main = paste("Cycles: ", floor(cycles))) +
+        geom_text(aes(label=n))+
+    geom_line(aes(log2(c(1/20, peak_performance/PI)), log2(c(1/20 * PI, peak_performance))), col = 2) +
     theme(axis.title.y = element_text(angle=y.axis.angle)) + 
-    geom_hline(yintercept = 100, col = 2) +
-    geom_hline(yintercept = 100 * (old_peak_performance/peak_performance) , col = "grey") +
-    annotate("text", label = "vec. peak performance", x = 600, y = 98, size = 4, colour = "red") +
-    annotate("text", label = "old peak performance", x = 600, y = 23, size = 4, colour = "grey") +
-    annotate("text", label = substring(name, 6), x = 300, y = max(perf_proc)+10, size = 4, colour = "black")
+    geom_hline(yintercept = log2(peak_performance), col = 2) +
+    geom_hline(yintercept = log2(old_peak_performance) , col = "grey") # +
+    #annotate("text", label = "vec. peak performance", x = 300, y = 95, size = 4, colour = "red") +
+    #annotate("text", label = "old peak performance", x = 300, y = 20, size = 4, colour = "red") +
+    #annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
 
   return(p)
 }
@@ -104,10 +117,14 @@ for(i in 1:nrow(config)){
   
   n_val <- as.numeric(config[i, 2])
   intercept <- as.numeric(config[i, 3])
-  plot <- plot_perf(name, n_val, intercept)
+  n_cost <- as.numeric(config[i, 4])
+  intercept_cost <- as.numeric(config[i, 5])
+  n_byte <- as.numeric(config[i, 6])
+  intercept_byte <- as.numeric(config[i, 7])
+  plot <- plot_roofline(name, n_val, intercept, n_cost, intercept_cost, n_byte, intercept_byte)
   #plots <- c(plot)
   # Store plot
-  jpeg(paste("00", name, ".jpeg", sep = ""))
+  jpeg(paste("00", name, "_roofline.jpeg", sep = ""))
   print(plot)
   dev.off()
 }

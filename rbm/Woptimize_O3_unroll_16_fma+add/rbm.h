@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <math.h>
+#include "emmintrin.h"
+#include <immintrin.h>
 #include <stdlib.h>
 #include "tsc_x86.h"
+
 
 //RANDOM LINE ADDED
 
@@ -275,36 +278,184 @@ void h_update(double * h, int y0, int * x0, double * c,
     
 }
 
+// TODO
+double * img_tmp_mem0;
+double * img_tmp_mem1;
 
 void W_update(double * W, double * h0_cap, double * h1_cap,
-              int * x0, int * x1, double lambda, int n, int D){
+              double * x0, double * x1, double lambda, int n, int D){
     // Scalar replacement
     // Loop unrolling: by 2
-    int x00, x01, x02, x03;
-    int x10, x11, x12, x13;
+
+    double m1, m2, m3, m4, m5, m6, m7, m8;
+    double n1, n2, n3, n4, n5, n6, n7, n8;
+    double s1, s2, s3, s4, s5, s6, s7, s8;
+    double t1, t2, t3, t4, t5, t6, t7, t8;
+    double l1, l2, l3, l4, l5, l6, l7, l8;
+
+    __m128d w1, w2, w3, w4, w5, w6, w7, w8;
+    __m128d tmp11, tmp12, tmp13, tmp14, tmp21, tmp22, tmp23, tmp24;
+    __m128d tmp31, tmp32, tmp33, tmp34, tmp41, tmp42, tmp43, tmp44;
+    __m128d x01d, x02d, x03d, x04d, x11d, x12d, x13d, x14d;
+    __m128d x05d, x06d, x07d, x08d, x15d, x16d, x17d, x18d;
+    double tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8;
+    double h0scalar_lambda, h1scalar_lambda;
+    double h1scalar_lambda1, h1scalar_lambda2, h1scalar_lambda3, h1scalar_lambda4, h1scalar_lambda5, h1scalar_lambda6, h1scalar_lambda7, h1scalar_lambda8;
+    double h0scalar_lambda1, h0scalar_lambda2, h0scalar_lambda3, h0scalar_lambda4, h0scalar_lambda5, h0scalar_lambda6, h0scalar_lambda7, h0scalar_lambda8;
+
+    int iD;
     for (int i = 0; i < n; i++)
     {
-        int iD = i * D;
-        double h0scalar = h0_cap[i];
-        double h1scalar = h1_cap[i]; 
-        for (int j = 0; j < D; j+=4)
+        iD = i * D;
+        // Store h0 and h1 into variable, and multiply by lambda
+        // so that we don't multiply inside of the inner loop
+        h0scalar_lambda = lambda * h0_cap[i];
+        h1scalar_lambda = lambda * h1_cap[i]; 
+
+
+        h1scalar_lambda1 = h1scalar_lambda;
+        h1scalar_lambda2 = h1scalar_lambda;
+        h1scalar_lambda3 = h1scalar_lambda;
+        h1scalar_lambda4 = h1scalar_lambda;
+        h1scalar_lambda5 = h1scalar_lambda;
+        h1scalar_lambda6 = h1scalar_lambda;
+        h1scalar_lambda7 = h1scalar_lambda;
+        h1scalar_lambda8 = h1scalar_lambda;
+
+        h0scalar_lambda1 = h0scalar_lambda;
+        h0scalar_lambda2 = h0scalar_lambda;
+        h0scalar_lambda3 = h0scalar_lambda;
+        h0scalar_lambda4 = h0scalar_lambda;
+        h0scalar_lambda5 = h0scalar_lambda;
+        h0scalar_lambda6 = h0scalar_lambda;
+        h0scalar_lambda7 = h0scalar_lambda;
+        h0scalar_lambda8 = h0scalar_lambda;
+
+        __m128d h0sc = _mm_load_sd(&h0scalar_lambda);
+        __m128d h1sc = _mm_load_sd(&h1scalar_lambda);
+        
+        for (int j = 0; j < D; j+=16)
         {
-            x00 = x0[j];
-            x10 = x1[j];
 
-            x01 = x0[j+1];
-            x11 = x1[j+1];
-            
-            x02 = x0[j+2];
-            x12 = x1[j+2];
-            
-            x03 = x0[j+3];
-            x13 = x1[j+3];
+            l1 = W[iD+j+8];
+            l2 = W[iD+j+9];
+            l3 = W[iD+j+10];
+            l4 = W[iD+j+11];
+            l5 = W[iD+j+12];
+            l6 = W[iD+j+13];
+            l7 = W[iD+j+14];
+            l8 = W[iD+j+15];
 
-            W[iD+j] = W[iD+j] + lambda * (h0scalar * x00 - h1scalar * x10);
-            W[iD+j+1] = W[iD+j+1] + lambda * (h0scalar * x01 - h1scalar * x11);
-            W[iD+j+2] = W[iD+j+2] + lambda * (h0scalar * x02 - h1scalar * x12);
-            W[iD+j+3] = W[iD+j+3] + lambda * (h0scalar * x03 - h1scalar * x13);
+            w1 = _mm_load_sd(W + iD + j);
+            w2 = _mm_load_sd(W + iD + j + 1);
+            w3 = _mm_load_sd(W + iD + j + 2);
+            w4 = _mm_load_sd(W + iD + j + 3);
+            w5 = _mm_load_sd(W + iD + j + 4);
+            w6 = _mm_load_sd(W + iD + j + 5);
+            w7 = _mm_load_sd(W + iD + j + 6);
+            w8 = _mm_load_sd(W + iD + j + 7);
+
+            x01d = _mm_load_sd(x0 + j);
+            x11d = _mm_load_sd(x1 + j);
+            x02d = _mm_load_sd(x0 + j + 1);
+            x12d = _mm_load_sd(x1 + j + 1);
+            x03d = _mm_load_sd(x0 + j + 2);
+            x13d = _mm_load_sd(x1 + j + 2);
+            x04d = _mm_load_sd(x0 + j + 3);
+            x14d = _mm_load_sd(x1 + j + 3);
+
+            x05d = _mm_load_sd(x0 + j + 4);
+            x15d = _mm_load_sd(x1 + j + 4);
+            x06d = _mm_load_sd(x0 + j + 5);
+            x16d = _mm_load_sd(x1 + j + 5);
+            x07d = _mm_load_sd(x0 + j + 6);
+            x17d = _mm_load_sd(x1 + j + 6);
+            x08d = _mm_load_sd(x0 + j + 7);
+            x18d = _mm_load_sd(x1 + j + 7);
+
+            m1 = h1scalar_lambda1 * x1[j+8];
+            m2 = h1scalar_lambda2 * x1[j+9];
+            m3 = h1scalar_lambda3 * x1[j+10];
+            m4 = h1scalar_lambda4 * x1[j+11];
+            m5 = h1scalar_lambda5 * x1[j+12];
+            m6 = h1scalar_lambda6 * x1[j+13];
+            m7 = h1scalar_lambda7 * x1[j+14];
+            m8 = h1scalar_lambda8 * x1[j+15];
+            
+            n1 = h0scalar_lambda1 * x0[j+8];
+            n2 = h0scalar_lambda2 * x0[j+9];
+            n3 = h0scalar_lambda3 * x0[j+10];
+            n4 = h0scalar_lambda4 * x0[j+11];
+            n5 = h0scalar_lambda5 * x0[j+12];
+            n6 = h0scalar_lambda6 * x0[j+13];
+            n7 = h0scalar_lambda7 * x0[j+14];
+            n8 = h0scalar_lambda8 * x0[j+15];
+
+            tmp11 = _mm_fmsub_pd(h1sc, x11d, w1);
+            tmp12 = _mm_fmsub_pd(h1sc, x12d, w2);
+            tmp13 = _mm_fmsub_pd(h1sc, x13d, w3);
+            tmp14 = _mm_fmsub_pd(h1sc, x14d, w4);
+
+            tmp31 = _mm_fmsub_pd(h1sc, x15d, w5);
+            tmp32 = _mm_fmsub_pd(h1sc, x16d, w6);
+            tmp33 = _mm_fmsub_pd(h1sc, x17d, w7);
+            tmp34 = _mm_fmsub_pd(h1sc, x18d, w8);
+
+            s1 = m1 - l1;    
+            s2 = m2 - l2;    
+            s3 = m3 - l3;    
+            s4 = m4 - l4;    
+            s5 = m5 - l5;    
+            s6 = m6 - l6;    
+            s7 = m7 - l7;    
+            s8 = m8 - l8;  
+
+            tmp21 = _mm_fmsub_pd(h0sc, x01d, tmp11);
+            tmp22 = _mm_fmsub_pd(h0sc, x02d, tmp12);
+            tmp23 = _mm_fmsub_pd(h0sc, x03d, tmp13);
+            tmp24 = _mm_fmsub_pd(h0sc, x04d, tmp14);
+
+            tmp41 = _mm_fmsub_pd(h0sc, x05d, tmp31);
+            tmp42 = _mm_fmsub_pd(h0sc, x06d, tmp32);
+            tmp43 = _mm_fmsub_pd(h0sc, x07d, tmp33);
+            tmp44 = _mm_fmsub_pd(h0sc, x08d, tmp34);
+
+            s1 = n1 - s1;    
+            s2 = n2 - s2;    
+            s3 = n3 - s3;    
+            s4 = n4 - s4;    
+            s5 = n5 - s5;    
+            s6 = n6 - s6;    
+            s7 = n7 - s7;    
+            s8 = n8 - s8; 
+            
+            // Note: The computation is done by the following:
+            // Original: W[iD+j] = W[iD+j] + (h0scalar_lambda * x0 - h1scalar_lambda * x1);
+            // Rearranged: W[iD+j] = h0scalar_lambda * x0 - (h1scalar_lambda * x1 - W[iD+j]);
+
+            _mm_store_sd(W + iD + j, tmp21);
+            _mm_store_sd(W + iD + j + 1, tmp22);
+            _mm_store_sd(W + iD + j + 2, tmp23);
+            _mm_store_sd(W + iD + j + 3, tmp24);
+
+            _mm_store_sd(W + iD + j + 4, tmp41);
+            _mm_store_sd(W + iD + j + 5, tmp42);
+            _mm_store_sd(W + iD + j + 6, tmp43);
+            _mm_store_sd(W + iD + j + 7, tmp44);
+
+
+            //W[i * D + j] = W[i * D + j] + lambda * (h0_cap[i] * x0[j] - h1_cap[i] * x1[j])             
+                 
+
+            W[iD+j+8] = s1;
+            W[iD+j+9] = s2;
+            W[iD+j+10] = s3;
+            W[iD+j+11] = s4;
+            W[iD+j+12] = s5;
+            W[iD+j+13] = s6;
+            W[iD+j+14] = s7;
+            W[iD+j+15] = s8;
+
         }
         // We don't need additional patch, because D mod 8 = 0
     }
@@ -358,6 +509,11 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
                          double * b, double * c, double * d,
                          double * U, double * W, int n, int D, int K) //DONE
 {
+    img_tmp_mem0 = (double*)malloc(sizeof(double) * D);
+    img_tmp_mem1 = (double*)malloc(sizeof(double) * D);
+
+
+
     //Positive Phase
     int y0 = yi;
     int * x0 = xi;
@@ -445,14 +601,18 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     m2 += delta*(cycles - mean);
 #endif
     
-    
+        // TODO
+    for (int i = 0; i < D; i++){
+        img_tmp_mem0[i] = (double)x0[i];
+        img_tmp_mem1[i] = (double)x1[i];
+    }
     
     //Update Phase
 #ifdef PERF_W_UPDATE
     myInt64 start;
     start = start_tsc();
 #endif
-    W_update(W, h0_cap, h1_cap, x0, x1, lambda, n, D);
+    W_update(W, h0_cap, h1_cap, img_tmp_mem0, img_tmp_mem1, lambda, n, D);
 #ifdef PERF_W_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
