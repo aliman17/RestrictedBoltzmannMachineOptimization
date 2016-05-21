@@ -44,14 +44,17 @@ double *W; // Number of col= D, rows = n
 double *b;
 double *c;
 double *d;
-double *U; // Number of col= n, rows = K
+double *U; // Number of col= K, rows = n
 double *h0_cap;
-
+int * x1 ;
+int * h0 ;
+int * x0 ;
+double * h1_cap;
 
 double energy_for_all();
-void gibbs_H(int * h0, int y0, int *x0);
-int gibbs_Y_(int* h0);
-void gibbs_X_(int * x, int * h0);
+void gibbs_H(int y0);
+int gibbs_Y_();
+void gibbs_X_(int * x);
 
 
 double uniform()
@@ -93,6 +96,9 @@ void init_param()
     d = (double *) malloc(K * sizeof(double));
     U = (double *) malloc(n * K * sizeof(double));
     h0_cap = (double *) malloc(sizeof(double) * n);
+    h0 = (int *) malloc(sizeof(int) * n);
+    x1 = (int *) malloc(sizeof(int) * D);
+    h1_cap = (double *) malloc(sizeof(double) * n);
     
     //The biases b ,c ,d are initiallez to zero
     
@@ -119,17 +125,8 @@ void init_param()
     }
     
     double maxU = n < K ? 1.0 / sqrt(K) : 1.0 / sqrt(n);
-    double *U_temp = (double *) malloc(n * K * sizeof(double));;
     for (int i = 0 ; i < n * K; i++) {
-        U_temp[i] = (uniform() - 0.5) * maxU;
-    }
-    
-    for(int i=0;i<n;i++)
-    {
-        for(int j=0;j<K;j++)
-        {
-            U[j * n + i] = U_temp[i * K + j];
-        }
+        U[i] = (uniform() - 0.5) * maxU;
     }
     
 }
@@ -250,7 +247,8 @@ double sigmoid(double val)
  * This function if more general then the previous one for h0_cap
  * h <- sigmoid( c + Wx + Uy )
  */
-void h_update(double * h, int y0, int * x0){
+void h_update(double *h, int y0, int * x0)
+{
     
     for (int i = 0; i < n ; i++)
     {
@@ -264,7 +262,7 @@ void h_update(double * h, int y0, int * x0){
         //Can be optimized
         for (int j = 0; j < K; j++)
         {
-            if (j == y0) sum = sum + U[j * n + i];
+            if (j == y0) sum = sum + U[i * K + j];
         }
         
         h[i] = sigmoid(sum);
@@ -273,7 +271,8 @@ void h_update(double * h, int y0, int * x0){
 }
 
 
-void W_update(double * h1_cap, int * x0, int * x1){
+void W_update()
+{
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < D; j++)
@@ -283,21 +282,24 @@ void W_update(double * h1_cap, int * x0, int * x1){
     }
 }
 
-void b_update(double * b, int * x0, int * x1, double lambda, int D){
+void b_update()
+{
     for (int i = 0; i < D; i++)
     {
         b[i] = b[i] + lambda * (x0[i] - x1[i]);
     }
 }
 
-void c_update(double * c, double * h0_cap, double * h1_cap, double lambda, int n){
+void c_update()
+{
     for (int i = 0; i < n; i++)
     {
         c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
     }
 }
 
-void d_update(double * d, int y0, int y1, double lambda, int K){
+void d_update(int y0, int y1)
+{
     for (int i = 0; i < K; i++)
     {
         if (i == y0)
@@ -308,17 +310,16 @@ void d_update(double * d, int y0, int y1, double lambda, int K){
     }
 }
 
-void U_update(double * U, double * h0_cap, double * h1_cap,
-              int y0, int y1, double lambda, int n, int K){
+void U_update(int y0, int y1){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < K; j++)
         {
             if (j == y0)
-            U[j * n + i] = U[j * n + i] + lambda * (h0_cap[i]);
+            U[i * K + j] = U[i * K + j] + lambda * (h0_cap[i]);
             
             if (j == y1)
-            U[j * n + i] = U[j * n + i] + lambda * (-h1_cap[i]);
+            U[i * K + j] = U[i * K + j] + lambda * (-h1_cap[i]);
         }
     }
 }
@@ -327,13 +328,11 @@ void U_update(double * U, double * h0_cap, double * h1_cap,
 /*
  Performs next step of training with a new image and it's class
  */
-void COD_training_update(int yi, int * xi, double * h0_cap,
-                         double * b, double * c, double * d,
-                         double * U, double * W, int n, int D, int K) //DONE
+void COD_training_update(int yi, int * xi) //DONE
 {
     //Positive Phase
     int y0 = yi;
-    int * x0 = xi;
+    x0 = xi;
     
     //double * h0_cap = (double *) malloc(sizeof(double) * n);
     
@@ -353,16 +352,13 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     
     
     //Negative Phase
-    int * h0 = (int *) malloc(sizeof(int) * n);
-    int * x1 = (int *) malloc(sizeof(int) * D);
-    double * h1_cap = (double *) malloc(sizeof(double) * n);
     
     // Compute Gibbs samplings for h0, y1 and x1
 #ifdef PERF_GIBBS_H
     myInt64 start;
     start = start_tsc();
 #endif
-    gibbs_H(h0, y0, x0);
+    gibbs_H(y0);
 #ifdef PERF_GIBBS_H
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -377,7 +373,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    int y1 = gibbs_Y_(h0);
+    int y1 = gibbs_Y_();
 #ifdef PERF_GIBBS_Y
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -392,7 +388,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    gibbs_X_(x1, h0);
+    gibbs_X_(x1);
 #ifdef PERF_GIBBS_X
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -425,7 +421,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    W_update(h1_cap, x0, x1);
+    W_update();
 #ifdef PERF_W_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -440,7 +436,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    b_update(b, x0, x1, lambda, n);
+    b_update();
 #ifdef PERF_B_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -454,7 +450,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    c_update(c, h0_cap, h1_cap, lambda, n);
+    c_update();
 #ifdef PERF_C_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -469,7 +465,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    d_update(d, y0, y1, lambda, K);
+    d_update(y0, y1);
 #ifdef PERF_D_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -483,7 +479,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
+    U_update(y0, y1);
 #ifdef PERF_U_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -493,9 +489,9 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
 #endif
     
     //free(h0_cap);
-    free(h1_cap);
-    free(x1);
-    free(h0);
+    //free(h1_cap);
+    //free(x1);
+    //free(h0);
     
 }
 
@@ -512,10 +508,7 @@ void COD_train()
         myInt64 start;
         start = start_tsc();
 #endif
-        COD_training_update(get_label(i, labels_train), get_image(i, images_train),
-                            h0_cap,
-                            b, c, d,
-                            U, W, n, D, K);
+        COD_training_update(get_label(i, labels_train), get_image(i, images_train));
 #ifdef PERF_COD_TRAIN_UPDATE
         myInt64 cycles = stop_tsc(start);
         count = count + 1;
@@ -573,7 +566,7 @@ double energy(int y, int *x, double * h, double * W,
     // sum += h'Uy
     for(int i=0;i<n;i++)
     {
-        sum += U[y*n+i] * h[i];
+        sum += U[i*K+y] * h[i];
     }
     
     return -sum;
@@ -602,11 +595,11 @@ double energy_for_all()
  Gibbs samplings for H (hidden nodes)
  Modifies h0 gibbs_H(h0, y0, x0);
  */
-void gibbs_H(int * h0, int y0, int *x0)
+void gibbs_H(int y0)
 {
     for (int j = 0; j < n; j++)
     {
-        double sum = c[j] + U[y0 * n + j];
+        double sum = c[j] + U[j * K + y0];
         for (int i = 0; i < D; i++)
         {
             sum = sum + W[j * D + i] * x0[i];
@@ -629,7 +622,7 @@ void gibbs_H(int * h0, int y0, int *x0)
  Gibbs samplings for Y (label)
  Returns value for Y
  */
-int gibbs_Y_(int* h0)
+int gibbs_Y_()
 {
     double sum = 0;
     double *y_temp = (double *) malloc(sizeof(double) * K);
@@ -638,7 +631,7 @@ int gibbs_Y_(int* h0)
         double val = d[i];
         for (int j = 0; j < n; j++)
         {
-            val = val + U[i * n + j] * h0[j];
+            val = val + U[j * K + i] * h0[j];
         }
         y_temp[i] = exp(val);
         sum = sum + y_temp[i];
@@ -675,7 +668,7 @@ int gibbs_Y_(int* h0)
  Gibbs samplings for X (image)
  Modifies x
  */
-void gibbs_X_(int * x, int * h0)
+void gibbs_X_(int * x)
 {
     for (int i = 0; i < D; i++)
     {
