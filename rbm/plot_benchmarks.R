@@ -70,7 +70,8 @@ plot_perf <- function(name, n_koef, n_intercept){
   cycles <- cod[,2]                   # Get cycles
   flops <- n_koef * n + n_intercept   # Compute flops 
   perf <- flops / cycles              # Get performance
-  peak_performance <- 4               # Set peak performance
+  peak_performance <- 16              # Set peak performance
+  old_peak_performance <- 4
  
   perf_proc <- perf/peak_performance * 100
 
@@ -78,12 +79,14 @@ plot_perf <- function(name, n_koef, n_intercept){
   p <- qplot(n, perf_proc, 
         xlab = "Number of hidden layers", 
         ylab = "% of peak performance", geom = "path",
-        ylim = c(0, 200),
+        ylim = c(0, 100),
         main = paste("Cycles: ", floor(cycles))) +
     theme(axis.title.y = element_text(angle=y.axis.angle)) + 
     geom_hline(yintercept = 100, col = 2) +
-    annotate("text", label = "peak performance", x = 400, y = 95, size = 4, colour = "red") +
-    annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+    geom_hline(yintercept = 100 * (old_peak_performance/peak_performance) , col = "grey") +
+    annotate("text", label = "vec. peak performance", x = 600, y = 98, size = 4, colour = "red") +
+    annotate("text", label = "old peak performance", x = 600, y = 23, size = 4, colour = "grey") +
+    annotate("text", label = substring(name, 6), x = 300, y = max(perf_proc)+10, size = 4, colour = "black")
 
   return(p)
 }
