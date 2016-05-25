@@ -9,11 +9,10 @@ if (length(args)!=1) {
   setwd(current_dir)
 }
 
-ghz = 1.6
-bandwidth = 25 #G
+
 peak_performance <- 16              # Set peak performance
 old_peak_performance <- 4
-
+PI <- 32
 
 #folder <- args[2]
 
@@ -82,13 +81,13 @@ plot_roofline <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_b
   byte <- n_byte * n + intercept_byte
   
   op.intensity <- cost/byte
-  PI <- bandwidth / ghz
+
   
   perf_proc <- perf
 
   # Plot
   p <- qplot(log2(op.intensity), log2(perf_proc), 
-        xlab = "Number of hidden layers (log2)", 
+        xlab = "Number of hidden layers (log2)",
         ylab = "performance (log2)",
         #ylim = c(0, 100),
         main = paste("Cycles: ", floor(cycles))) +
@@ -119,12 +118,12 @@ for(i in 1:nrow(config)){
   intercept <- as.numeric(config[i, 3])
   n_cost <- as.numeric(config[i, 4])
   intercept_cost <- as.numeric(config[i, 5])
-  n_byte <- as.numeric(config[i, 6])
-  intercept_byte <- as.numeric(config[i, 7])
+  n_byte <- as.numeric(config[i, 8])
+  intercept_byte <- as.numeric(config[i, 9])
   plot <- plot_roofline(name, n_val, intercept, n_cost, intercept_cost, n_byte, intercept_byte)
   #plots <- c(plot)
   # Store plot
-  jpeg(paste("00", name, "_roofline.jpeg", sep = ""))
+  jpeg(paste("00", name, "_roofline_cache.jpeg", sep = ""))
   print(plot)
   dev.off()
 }
