@@ -47,35 +47,73 @@ plot_perf <- function(name, n_koef, n_intercept){
 
 plot_roofline <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
 {
-  cod <- read.table(name)             # Load table
-  n <- cod[,1]                        # Get n
-  cycles <- cod[,2]                   # Get cycles
-  flops <- n_koef * n + n_intercept   # Compute flops 
-  perf <- flops / cycles              # Get performance
-  
-  cost <- n_cost * n + intercept_cost
-  byte <- n_byte * n + intercept_byte
-  
-  op.intensity <- cost/byte
-  
-  perf_proc <- perf
-
-  # Plot
-  p <- qplot((op.intensity), (perf_proc),
-        xlab = "Operational Intensity",
-        ylab = "Performance",
-        #ylim = c(0, 100),
-        main = paste("Cycles: ", floor(cycles))) +
-        geom_text(aes(label=n))+
-    geom_line(aes((c(1/20, peak_performance/PI)), (c(1/20 * PI, peak_performance))), col = 2) +
-    theme(axis.title.y = element_text(angle=y.axis.angle)) + 
+    cod <- read.table(name)             # Load table
+    n <- cod[,1]                        # Get n
+    cycles <- cod[,2]                   # Get cycles
+    flops <- n_koef * n + n_intercept   # Compute flops
+    perf <- flops / cycles              # Get performance
+    
+    cost <- n_cost * n + intercept_cost
+    byte <- n_byte * n + intercept_byte
+    
+    op.intensity <- cost/byte
+    
+    perf_proc <- perf
+    
+    # Plot
+    p <- qplot((op.intensity), (perf_proc),
+    xlab = "Operational Intensity [flops/byte]",
+    ylab = "Performance [flops/cycle]",
+    #ylim = c(0, 100),
+    main = paste("Cycles: ", floor(cycles))) +
+    geom_text(aes(label=n))+
+    geom_line(aes((c(0, peak_performance/PI)), (c(0, peak_performance))), col = 2) +
+    geom_line(aes((c(0, 1/2)), (c(0, 1/2 * CACHE_BANDWIDTH))), col = 2) +
+    theme(axis.title.y = element_text(angle=y.axis.angle)) +
     geom_hline(yintercept = (peak_performance), col = 2) +
-    geom_hline(yintercept = (old_peak_performance) , col = "grey") # +
-    #annotate("text", label = "vec. peak performance", x = 300, y = 95, size = 4, colour = "red") +
-    #annotate("text", label = "old peak performance", x = 300, y = 20, size = 4, colour = "red") +
+    geom_hline(yintercept = (old_peak_performance) , col = "grey") +
+    annotate("text", label = "vec. peak performance", x = 1, y = 15.7, size = 4, colour = "red") +
+    annotate("text", label = "old peak performance", x = 1, y = 3.8, size = 4, colour = "grey") +
+    annotate("text", label = "memory bound", x = 1.22, y = 10, size = 4, colour = "red") +
+    annotate("text", label = "cache bound", x = 0.45, y = 9.4, size = 4, colour = "red")
     #annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+    
+    return(p)
+}
 
-  return(p)
+
+
+plot_roofline_cache <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
+{
+    cod <- read.table(name)             # Load table
+    n <- cod[,1]                        # Get n
+    cycles <- cod[,2]                   # Get cycles
+    flops <- n_koef * n + n_intercept   # Compute flops
+    perf <- flops / cycles              # Get performance
+    
+    cost <- n_cost * n + intercept_cost
+    byte <- n_byte * n + intercept_byte
+    
+    op.intensity <- cost/byte
+    
+    perf_proc <- perf
+    
+    # Plot
+    p <- qplot((op.intensity), (perf_proc),
+    xlab = "Operational Intensity [flops/byte]",
+    ylab = "Performance [flops/cycle]",
+    #ylim = c(0, 100),
+    main = paste("Cycles: ", floor(cycles))) +
+    geom_text(aes(label=n))+
+    geom_line(aes((c(1/20, peak_performance/PI)), (c(1/20 * PI, peak_performance))), col = 2) +
+    theme(axis.title.y = element_text(angle=y.axis.angle)) +
+    geom_hline(yintercept = (peak_performance), col = 2) +
+    geom_hline(yintercept = (old_peak_performance) , col = "grey") +
+    annotate("text", label = "vec. peak performance", x = 1, y = 15.7, size = 4, colour = "red") +
+    annotate("text", label = "old peak performance", x = 1, y = 3.8, size = 4, colour = "grey")
+    #annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+    
+    return(p)
 }
 
 
@@ -118,7 +156,7 @@ for(i in 1:nrow(config)){
     n_byte <- as.numeric(config[i, 8])
     intercept_byte <- as.numeric(config[i, 9])
     PI <- CACHE_BANDWIDTH
-    plot <- plot_roofline(name, n_val, intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
+    plot <- plot_roofline_cache(name, n_val, intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
     jpeg(paste("00", name, "_roofline_cache.jpeg", sep = ""))
     print(plot)
     dev.off()
