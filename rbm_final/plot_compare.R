@@ -1,18 +1,13 @@
 #!/usr/bin/env Rscript
+# Parse arguments
+args = commandArgs(trailingOnly=TRUE)
 
 cur_dir <- getwd()
 
-# Parse arguments
-args = commandArgs(trailingOnly=TRUE)
-if (length(args)<1) {
-    current_dir <- "./X_gibbs/X_gibbs_baseline"
-    next_dir <- "./X_gibbs/X_gibbs_unroll8_O3"
-    img_name <- "test"
-} else {
-  current_dir <- args[1]
-  next_dir <- args[2]
-  img_name <- args[3]
-}
+NAMES = c("Baseline", "W_update_O3", "W_update_O3_vectorized")
+POSITION = c(0.7, 1.7, 4.5)
+SELECTED_FUNCTION_NAME = "PERF_W_UPDATE"
+
 
 peak_performance <- 16              # Set peak performance
 old_peak_performance <- 4
@@ -37,33 +32,26 @@ y.axis.angle = 90
 #
 
 
-plot_perf <- function(name, n_koef, n_intercept, col){
-  cod <- read.table(name)             # Load table
-  n <- cod[,1]                        # Get n
-  cycles <- cod[,2]                   # Get cycles
-  flops <- n_koef * n + n_intercept   # Compute flops 
-  perf <- flops / cycles              # Get performance
-  perf_proc <- perf/peak_performance * 100
-  data <- data.frame(x = n, y = perf_proc)
-  return(geom_line(data = data, aes(x=x, y=y), col = col))
-
-}
 
 
 # Plot
 p <- qplot(
     xlab = "Number of hidden layers", 
-    ylab = "% of peak performance", geom = "path",
-    ylim = c(0, 100)) +
+    ylab = "% of peak performance", geom = "path") +
     theme(axis.title.y = element_text(angle=y.axis.angle)) + 
-    geom_hline(yintercept = 100, col = 2) +
-    geom_hline(yintercept = old_peak_performance/peak_performance * 100 , col = "grey") +
-    annotate("text", label = "vec. peak performance", x = 600, y = 98, size = 4, colour = "red") +
-    annotate("text", label = "old peak performance", x = 600, y = 23, size = 4, colour = "grey")
+    geom_hline(yintercept = 16, col = 2) +
+    geom_hline(yintercept = old_peak_performance , col = "grey") +
+annotate("text", label = "vec. peak performance", x = 1600, y = 15.7, size = 4, colour = "red") +
+annotate("text", label = "old peak performance", x = 1600, y = 3.8, size = 4, colour = "grey")
+
 
 counter <- 1
+img_name <- args[1]
 
-for(dir in c(current_dir, next_dir)){
+while (counter < length(args)){
+    dir = args[counter+1]
+    print(dir)
+    print(dir)
     setwd(cur_dir) # reset
     setwd(dir)
     # Open config file
@@ -72,6 +60,7 @@ for(dir in c(current_dir, next_dir)){
     #pdf(file='plot.pdf')
     for(i in 1:nrow(config)){
       name <- as.character(config[i, 1])
+      if (name == SELECTED_FUNCTION_NAME){
       
       # Check if the row is commented
       if (substring(name, 1, 1) == "#")
@@ -80,8 +69,16 @@ for(dir in c(current_dir, next_dir)){
       n_val <- as.numeric(config[i, 2])
       intercept <- as.numeric(config[i, 3])
       col = counter + 2
-      line <- plot_perf(name, n_val, intercept, col)
-      p <- p + line + annotate("text", label = paste("Input",counter), x = 200, y = (20*counter), size = 4, colour = col)
+      cod <- read.table(name)             # Load table
+      n <- cod[,1]                        # Get n
+      cycles <- cod[,2]                   # Get cycles
+      flops <- n_val * n + intercept   # Compute flops
+      perf <- flops / cycles              # Get performance
+      perf_proc <- perf#/peak_performance * 100
+      data <- data.frame(x = n, y = perf_proc)
+      line = geom_line(data = data, aes(x=x, y=y), col = col)
+      p <- p + line + annotate("text", label = NAMES[counter], x = 1000, y = POSITION[counter], size = 6, colour = col)
+    }
     }
     counter <- counter + 1
 }
