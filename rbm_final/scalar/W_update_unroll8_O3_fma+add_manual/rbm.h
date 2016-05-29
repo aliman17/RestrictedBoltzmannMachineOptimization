@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <math.h>
+#include "emmintrin.h"
+#include <immintrin.h>
 #include <stdlib.h>
 #include "tsc_x86.h"
+
 
 //RANDOM LINE ADDED
 
@@ -46,15 +49,23 @@ double *c;
 double *d;
 double *U; // Number of col= K, rows = n
 double *h0_cap;
-int * x1 ;
-int * h0 ;
-int * x0 ;
-double * h1_cap;
+
+
+
+/*
+ Definition of useful structure to check gibbs_Y and the prediction routines
+ */
+struct miniarr{
+    double mr[K];
+};
+typedef struct miniarr Parr;
+
+
 
 double energy_for_all();
-void gibbs_H(int y0);
-int gibbs_Y_();
-void gibbs_X_(int * x);
+void gibbs_H(int * h0, int y0, int *x0);
+int gibbs_Y_(int* h0, double * U, double * d, int K, int n);
+void gibbs_X_(int * x, int * h0, double * W, int D, int n);
 
 
 double uniform()
@@ -96,9 +107,6 @@ void init_param()
     d = (double *) malloc(K * sizeof(double));
     U = (double *) malloc(n * K * sizeof(double));
     h0_cap = (double *) malloc(sizeof(double) * n);
-    h0 = (int *) malloc(sizeof(int) * n);
-    x1 = (int *) malloc(sizeof(int) * D);
-    h1_cap = (double *) malloc(sizeof(double) * n);
     
     //The biases b ,c ,d are initiallez to zero
     
@@ -247,8 +255,8 @@ double sigmoid(double val)
  * This function if more general then the previous one for h0_cap
  * h <- sigmoid( c + Wx + Uy )
  */
-void h_update(double *h, int y0, int * x0)
-{
+void h_update(double * h, int y0, int * x0, double * c,
+              double * W, double * U, int n, int D, int K){
     
     for (int i = 0; i < n ; i++)
     {
@@ -270,36 +278,151 @@ void h_update(double *h, int y0, int * x0)
     
 }
 
+// TODO
+double * img_tmp_mem0;
+double * img_tmp_mem1;
 
-void W_update()
-{
+void W_update(double * W, double * h0_cap, double * h1_cap,
+              double * x0, double * x1, double lambda, int n, int D){
+    // Scalar replacement
+    // Loop unrolling: by 2
+
+    __m128d w1, w2, w3, w4, w5, w6, w7, w8;
+    __m128d tmp11, tmp12, tmp13, tmp14, tmp21, tmp22, tmp23, tmp24;
+    __m128d tmp31, tmp32, tmp33, tmp34, tmp41, tmp42, tmp43, tmp44;
+    __m128d x01d, x02d, x03d, x04d, x11d, x12d, x13d, x14d;
+    __m128d x05d, x06d, x07d, x08d, x15d, x16d, x17d, x18d;
+    double tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8;
+    double h0scalar_lambda, h1scalar_lambda;
+    int iD;
     for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < D; j++)
+        iD = i * D;
+        // Store h0 and h1 into variable, and multiply by lambda
+        // so that we don't multiply inside of the inner loop
+        h0scalar_lambda = lambda * h0_cap[i];
+        h1scalar_lambda = lambda * h1_cap[i]; 
+        __m128d h0sc = _mm_load_sd(&h0scalar_lambda);
+        __m128d h1sc = _mm_load_sd(&h1scalar_lambda);
+        
+        for (int j = 0; j < D; j+=8)
         {
-            W[i * D + j] = W[i * D + j] + lambda * (h0_cap[i] * x0[j] - h1_cap[i] * x1[j]);
+
+            w1 = _mm_load_sd(W + iD + j);
+            w2 = _mm_load_sd(W + iD + j + 1);
+            w3 = _mm_load_sd(W + iD + j + 2);
+            w4 = _mm_load_sd(W + iD + j + 3);
+            w5 = _mm_load_sd(W + iD + j + 4);
+            w6 = _mm_load_sd(W + iD + j + 5);
+            //w7 = _mm_load_sd(W + iD + j + 6);
+            //w8 = _mm_load_sd(W + iD + j + 7);
+
+
+            x01d = _mm_load_sd(x0 + j);
+            x11d = _mm_load_sd(x1 + j);
+            x02d = _mm_load_sd(x0 + j + 1);
+            x12d = _mm_load_sd(x1 + j + 1);
+            x03d = _mm_load_sd(x0 + j + 2);
+            x13d = _mm_load_sd(x1 + j + 2);
+            x04d = _mm_load_sd(x0 + j + 3);
+            x14d = _mm_load_sd(x1 + j + 3);
+
+
+            x05d = _mm_load_sd(x0 + j + 4);
+            x15d = _mm_load_sd(x1 + j + 4);
+            x06d = _mm_load_sd(x0 + j + 5);
+            x16d = _mm_load_sd(x1 + j + 5);
+            //x07d = _mm_load_sd(x0 + j + 6);
+            //x17d = _mm_load_sd(x1 + j + 6);
+            //x08d = _mm_load_sd(x0 + j + 7);
+            //x18d = _mm_load_sd(x1 + j + 7);
+            
+            tmp1 = h1scalar_lambda * x1[j+6];
+
+            tmp11 = _mm_fmsub_pd(h1sc, x11d, w1);
+            tmp12 = _mm_fmsub_pd(h1sc, x12d, w2);
+
+            tmp5 = h1scalar_lambda * x1[j+7];
+            tmp2 = tmp1 - W[iD+j+6];
+
+            tmp13 = _mm_fmsub_pd(h1sc, x13d, w3);
+            tmp14 = _mm_fmsub_pd(h1sc, x14d, w4);
+
+            tmp6 = tmp5 - W[iD+j+7];
+            tmp3 = h0scalar_lambda * x0[j+6];
+
+            tmp31 = _mm_fmsub_pd(h1sc, x15d, w5);
+            tmp32 = _mm_fmsub_pd(h1sc, x16d, w6);
+            //tmp33 = _mm_fmsub_pd(h1sc, x17d, w7);
+            //tmp34 = _mm_fmsub_pd(h1sc, x18d, w8);
+
+            tmp7 = h0scalar_lambda * x0[j+7];
+            W[iD+j+6] = tmp3 - tmp2;
+
+            tmp21 = _mm_fmsub_pd(h0sc, x01d, tmp11);
+            tmp22 = _mm_fmsub_pd(h0sc, x02d, tmp12);
+
+            W[iD+j+7] = tmp7 - tmp6;
+
+            tmp23 = _mm_fmsub_pd(h0sc, x03d, tmp13);
+            tmp24 = _mm_fmsub_pd(h0sc, x04d, tmp14);
+
+            tmp41 = _mm_fmsub_pd(h0sc, x05d, tmp31);
+            tmp42 = _mm_fmsub_pd(h0sc, x06d, tmp32);
+            //tmp43 = _mm_fmsub_pd(h0sc, x07d, tmp33);
+            //tmp44 = _mm_fmsub_pd(h0sc, x08d, tmp34);
+            
+            // Note: The computation is done by the following:
+            // Original: W[iD+j] = W[iD+j] + (h0scalar_lambda * x0 - h1scalar_lambda * x1);
+            // Rearranged: W[iD+j] = h0scalar_lambda * x0 - (h1scalar_lambda * x1 - W[iD+j]);
+
+            _mm_store_sd(W + iD + j, tmp21);
+            _mm_store_sd(W + iD + j + 1, tmp22);
+            _mm_store_sd(W + iD + j + 2, tmp23);
+            _mm_store_sd(W + iD + j + 3, tmp24);
+            
+            // Note: The computation is done by the following:
+            // Original: W[iD+j] = W[iD+j] + (h0scalar_lambda * x0 - h1scalar_lambda * x1);
+            // Rearranged: W[iD+j] = h0scalar_lambda * x0 - (h1scalar_lambda * x1 - W[iD+j]);
+
+            _mm_store_sd(W + iD + j + 4, tmp41);
+            _mm_store_sd(W + iD + j + 5, tmp42);
+            //_mm_store_sd(W + iD + j + 6, tmp43);
+            //_mm_store_sd(W + iD + j + 7, tmp44);
+
+
+            
+            
+            
+           
+
+
+            
+            
+            
+           
+
+
         }
+        // We don't need additional patch, because D mod 8 = 0
     }
 }
 
-void b_update()
-{
+void b_update(double * b, int * x0, int * x1, double lambda, int D){
     for (int i = 0; i < D; i++)
     {
         b[i] = b[i] + lambda * (x0[i] - x1[i]);
     }
 }
 
-void c_update()
-{
+void c_update(double * c, double * h0_cap, double * h1_cap, double lambda, int n){
     for (int i = 0; i < n; i++)
     {
         c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
     }
 }
 
-void d_update(int y0, int y1)
-{
+void d_update(double * d, int y0, int y1, double lambda, int K){
     for (int i = 0; i < K; i++)
     {
         if (i == y0)
@@ -310,7 +433,8 @@ void d_update(int y0, int y1)
     }
 }
 
-void U_update(int y0, int y1){
+void U_update(double * U, double * h0_cap, double * h1_cap,
+              int y0, int y1, double lambda, int n, int K){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < K; j++)
@@ -328,11 +452,18 @@ void U_update(int y0, int y1){
 /*
  Performs next step of training with a new image and it's class
  */
-void COD_training_update(int yi, int * xi) //DONE
+void COD_training_update(int yi, int * xi, double * h0_cap,
+                         double * b, double * c, double * d,
+                         double * U, double * W, int n, int D, int K) //DONE
 {
+    img_tmp_mem0 = (double*)malloc(sizeof(double) * D);
+    img_tmp_mem1 = (double*)malloc(sizeof(double) * D);
+
+
+
     //Positive Phase
     int y0 = yi;
-    x0 = xi;
+    int * x0 = xi;
     
     //double * h0_cap = (double *) malloc(sizeof(double) * n);
     
@@ -341,7 +472,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    h_update(h0_cap, y0, x0);
+    h_update(h0_cap, y0, x0, c, W, U, n, D, K);
 #ifdef PERF_H0_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -352,13 +483,16 @@ void COD_training_update(int yi, int * xi) //DONE
     
     
     //Negative Phase
+    int * h0 = (int *) malloc(sizeof(int) * n);
+    int * x1 = (int *) malloc(sizeof(int) * D);
+    double * h1_cap = (double *) malloc(sizeof(double) * n);
     
     // Compute Gibbs samplings for h0, y1 and x1
 #ifdef PERF_GIBBS_H
     myInt64 start;
     start = start_tsc();
 #endif
-    gibbs_H(y0);
+    gibbs_H(h0, y0, x0);
 #ifdef PERF_GIBBS_H
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -373,7 +507,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    int y1 = gibbs_Y_();
+    int y1 = gibbs_Y_(h0, U, d, K, n);
 #ifdef PERF_GIBBS_Y
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -388,7 +522,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    gibbs_X_(x1);
+    gibbs_X_(x1, h0, W, D, n);
 #ifdef PERF_GIBBS_X
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -405,7 +539,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    h_update(h1_cap, y1, x1);
+    h_update(h1_cap, y1, x1, c, W, U, n, D, K);
 #ifdef PERF_H1_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -414,14 +548,18 @@ void COD_training_update(int yi, int * xi) //DONE
     m2 += delta*(cycles - mean);
 #endif
     
-    
+        // TODO
+    for (int i = 0; i < D; i++){
+        img_tmp_mem0[i] = (double)x0[i];
+        img_tmp_mem1[i] = (double)x1[i];
+    }
     
     //Update Phase
 #ifdef PERF_W_UPDATE
     myInt64 start;
     start = start_tsc();
 #endif
-    W_update();
+    W_update(W, h0_cap, h1_cap, img_tmp_mem0, img_tmp_mem1, lambda, n, D);
 #ifdef PERF_W_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -436,7 +574,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    b_update();
+    b_update(b, x0, x1, lambda, n);
 #ifdef PERF_B_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -450,7 +588,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    c_update();
+    c_update(c, h0_cap, h1_cap, lambda, n);
 #ifdef PERF_C_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -465,7 +603,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    d_update(y0, y1);
+    d_update(d, y0, y1, lambda, K);
 #ifdef PERF_D_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -479,7 +617,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    U_update(y0, y1);
+    U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
 #ifdef PERF_U_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -489,9 +627,9 @@ void COD_training_update(int yi, int * xi) //DONE
 #endif
     
     //free(h0_cap);
-    //free(h1_cap);
-    //free(x1);
-    //free(h0);
+    free(h1_cap);
+    free(x1);
+    free(h0);
     
 }
 
@@ -508,7 +646,10 @@ void COD_train()
         myInt64 start;
         start = start_tsc();
 #endif
-        COD_training_update(get_label(i, labels_train), get_image(i, images_train));
+        COD_training_update(get_label(i, labels_train), get_image(i, images_train),
+                            h0_cap,
+                            b, c, d,
+                            U, W, n, D, K);
 #ifdef PERF_COD_TRAIN_UPDATE
         myInt64 cycles = stop_tsc(start);
         count = count + 1;
@@ -595,7 +736,7 @@ double energy_for_all()
  Gibbs samplings for H (hidden nodes)
  Modifies h0 gibbs_H(h0, y0, x0);
  */
-void gibbs_H(int y0)
+void gibbs_H(int * h0, int y0, int *x0)
 {
     for (int j = 0; j < n; j++)
     {
@@ -622,7 +763,7 @@ void gibbs_H(int y0)
  Gibbs samplings for Y (label)
  Returns value for Y
  */
-int gibbs_Y_()
+int gibbs_Y_(int* h0, double * U, double * d, int K, int n)
 {
     double sum = 0;
     double *y_temp = (double *) malloc(sizeof(double) * K);
@@ -668,7 +809,7 @@ int gibbs_Y_()
  Gibbs samplings for X (image)
  Modifies x
  */
-void gibbs_X_(int * x)
+void gibbs_X_(int * x, int * h0, double * W, int D, int n)
 {
     for (int i = 0; i < D; i++)
     {

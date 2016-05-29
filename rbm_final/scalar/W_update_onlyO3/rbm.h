@@ -46,15 +46,23 @@ double *c;
 double *d;
 double *U; // Number of col= K, rows = n
 double *h0_cap;
-int * x1 ;
-int * h0 ;
-int * x0 ;
-double * h1_cap;
+
+
+
+/*
+ Definition of useful structure to check gibbs_Y and the prediction routines
+ */
+struct miniarr{
+    double mr[K];
+};
+typedef struct miniarr Parr;
+
+
 
 double energy_for_all();
-void gibbs_H(int y0);
-int gibbs_Y_();
-void gibbs_X_(int * x);
+void gibbs_H(int * h0, int y0, int *x0);
+int gibbs_Y_(int* h0, double * U, double * d, int K, int n);
+void gibbs_X_(int * x, int * h0, double * W, int D, int n);
 
 
 double uniform()
@@ -96,9 +104,6 @@ void init_param()
     d = (double *) malloc(K * sizeof(double));
     U = (double *) malloc(n * K * sizeof(double));
     h0_cap = (double *) malloc(sizeof(double) * n);
-    h0 = (int *) malloc(sizeof(int) * n);
-    x1 = (int *) malloc(sizeof(int) * D);
-    h1_cap = (double *) malloc(sizeof(double) * n);
     
     //The biases b ,c ,d are initiallez to zero
     
@@ -247,8 +252,8 @@ double sigmoid(double val)
  * This function if more general then the previous one for h0_cap
  * h <- sigmoid( c + Wx + Uy )
  */
-void h_update(double *h, int y0, int * x0)
-{
+void h_update(double * h, int y0, int * x0, double * c,
+              double * W, double * U, int n, int D, int K){
     
     for (int i = 0; i < n ; i++)
     {
@@ -271,8 +276,8 @@ void h_update(double *h, int y0, int * x0)
 }
 
 
-void W_update()
-{
+void W_update(double * W, double * h0_cap, double * h1_cap,
+              int * x0, int * x1, double lambda, int n, int D){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < D; j++)
@@ -282,24 +287,21 @@ void W_update()
     }
 }
 
-void b_update()
-{
+void b_update(double * b, int * x0, int * x1, double lambda, int D){
     for (int i = 0; i < D; i++)
     {
         b[i] = b[i] + lambda * (x0[i] - x1[i]);
     }
 }
 
-void c_update()
-{
+void c_update(double * c, double * h0_cap, double * h1_cap, double lambda, int n){
     for (int i = 0; i < n; i++)
     {
         c[i] = c[i] + lambda * (h0_cap[i] - h1_cap[i]);
     }
 }
 
-void d_update(int y0, int y1)
-{
+void d_update(double * d, int y0, int y1, double lambda, int K){
     for (int i = 0; i < K; i++)
     {
         if (i == y0)
@@ -310,7 +312,8 @@ void d_update(int y0, int y1)
     }
 }
 
-void U_update(int y0, int y1){
+void U_update(double * U, double * h0_cap, double * h1_cap,
+              int y0, int y1, double lambda, int n, int K){
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < K; j++)
@@ -328,11 +331,13 @@ void U_update(int y0, int y1){
 /*
  Performs next step of training with a new image and it's class
  */
-void COD_training_update(int yi, int * xi) //DONE
+void COD_training_update(int yi, int * xi, double * h0_cap,
+                         double * b, double * c, double * d,
+                         double * U, double * W, int n, int D, int K) //DONE
 {
     //Positive Phase
     int y0 = yi;
-    x0 = xi;
+    int * x0 = xi;
     
     //double * h0_cap = (double *) malloc(sizeof(double) * n);
     
@@ -341,7 +346,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    h_update(h0_cap, y0, x0);
+    h_update(h0_cap, y0, x0, c, W, U, n, D, K);
 #ifdef PERF_H0_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -352,13 +357,16 @@ void COD_training_update(int yi, int * xi) //DONE
     
     
     //Negative Phase
+    int * h0 = (int *) malloc(sizeof(int) * n);
+    int * x1 = (int *) malloc(sizeof(int) * D);
+    double * h1_cap = (double *) malloc(sizeof(double) * n);
     
     // Compute Gibbs samplings for h0, y1 and x1
 #ifdef PERF_GIBBS_H
     myInt64 start;
     start = start_tsc();
 #endif
-    gibbs_H(y0);
+    gibbs_H(h0, y0, x0);
 #ifdef PERF_GIBBS_H
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -373,7 +381,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    int y1 = gibbs_Y_();
+    int y1 = gibbs_Y_(h0, U, d, K, n);
 #ifdef PERF_GIBBS_Y
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -388,7 +396,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    gibbs_X_(x1);
+    gibbs_X_(x1, h0, W, D, n);
 #ifdef PERF_GIBBS_X
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -405,7 +413,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    h_update(h1_cap, y1, x1);
+    h_update(h1_cap, y1, x1, c, W, U, n, D, K);
 #ifdef PERF_H1_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -421,7 +429,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    W_update();
+    W_update(W, h0_cap, h1_cap, x0, x1, lambda, n, D);
 #ifdef PERF_W_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -436,7 +444,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    b_update();
+    b_update(b, x0, x1, lambda, n);
 #ifdef PERF_B_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -450,7 +458,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    c_update();
+    c_update(c, h0_cap, h1_cap, lambda, n);
 #ifdef PERF_C_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -465,7 +473,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    d_update(y0, y1);
+    d_update(d, y0, y1, lambda, K);
 #ifdef PERF_D_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -479,7 +487,7 @@ void COD_training_update(int yi, int * xi) //DONE
     myInt64 start;
     start = start_tsc();
 #endif
-    U_update(y0, y1);
+    U_update(U, h0_cap, h1_cap, y0, y1, lambda, n, K);
 #ifdef PERF_U_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -489,9 +497,9 @@ void COD_training_update(int yi, int * xi) //DONE
 #endif
     
     //free(h0_cap);
-    //free(h1_cap);
-    //free(x1);
-    //free(h0);
+    free(h1_cap);
+    free(x1);
+    free(h0);
     
 }
 
@@ -508,7 +516,10 @@ void COD_train()
         myInt64 start;
         start = start_tsc();
 #endif
-        COD_training_update(get_label(i, labels_train), get_image(i, images_train));
+        COD_training_update(get_label(i, labels_train), get_image(i, images_train),
+                            h0_cap,
+                            b, c, d,
+                            U, W, n, D, K);
 #ifdef PERF_COD_TRAIN_UPDATE
         myInt64 cycles = stop_tsc(start);
         count = count + 1;
@@ -595,7 +606,7 @@ double energy_for_all()
  Gibbs samplings for H (hidden nodes)
  Modifies h0 gibbs_H(h0, y0, x0);
  */
-void gibbs_H(int y0)
+void gibbs_H(int * h0, int y0, int *x0)
 {
     for (int j = 0; j < n; j++)
     {
@@ -622,7 +633,7 @@ void gibbs_H(int y0)
  Gibbs samplings for Y (label)
  Returns value for Y
  */
-int gibbs_Y_()
+int gibbs_Y_(int* h0, double * U, double * d, int K, int n)
 {
     double sum = 0;
     double *y_temp = (double *) malloc(sizeof(double) * K);
@@ -668,7 +679,7 @@ int gibbs_Y_()
  Gibbs samplings for X (image)
  Modifies x
  */
-void gibbs_X_(int * x)
+void gibbs_X_(int * x, int * h0, double * W, int D, int n)
 {
     for (int i = 0; i < D; i++)
     {
