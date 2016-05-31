@@ -319,7 +319,7 @@ void h_update(double * h, int y0, double * x0){
         s5 = _mm_add_sd(s5, s6);
         s7 = _mm_add_sd(s7, s8);
         s5 = _mm_add_sd(s5, s7);
-        _mm_store_sd(&sum2);
+        _mm_store_sd(&sum2,s5);
         sum = c[i] + s1+ s2+ s3+ s4 + sum2;
         
         //Can be optimized
