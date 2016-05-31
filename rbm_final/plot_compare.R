@@ -1,89 +1,111 @@
 #!/usr/bin/env Rscript
-# Parse arguments
-args = commandArgs(trailingOnly=TRUE)
 
-cur_dir <- getwd()
-
-NAMES = c("Baseline", "W_update_O3", "W_update_O3_vectorized")
-POSITION = c(0.7, 1.7, 4.5)
-SELECTED_FUNCTION_NAME = "PERF_W_UPDATE"
-
-
-peak_performance <- 16              # Set peak performance
+MAIN_DIR <- getwd()
+peak_performance <- 16
 old_peak_performance <- 4
-#folder <- args[2]
-
-# Set working directory to the folder with measuring data
 library(ggplot2)
-#setwd("~/Desktop/GIT/FastNumericalCode/rbm/update1")
-#setwd(paste(current_dir, "/", folder, sep = ""))
-
 y.axis.angle = 90
 
-# Multiple plot function
-#
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
-#
 
-
-
-
-# Plot
-p <- qplot(
-    xlab = "Number of hidden layers", 
-    ylab = "% of peak performance", geom = "path") +
-    theme(axis.title.y = element_text(angle=y.axis.angle)) + 
-    geom_hline(yintercept = 16, col = 2) +
-    geom_hline(yintercept = old_peak_performance , col = "grey") +
-annotate("text", label = "vec. peak performance", x = 1600, y = 15.7, size = 4, colour = "red") +
-annotate("text", label = "old peak performance", x = 1600, y = 3.8, size = 4, colour = "grey")
-
-
-counter <- 1
-img_name <- args[1]
-
-while (counter < length(args)){
-    dir = args[counter+1]
-    print(dir)
-    print(dir)
-    setwd(cur_dir) # reset
-    setwd(dir)
-    # Open config file
-    config <- read.table("config") 
-    
-    #pdf(file='plot.pdf')
-    for(i in 1:nrow(config)){
-      name <- as.character(config[i, 1])
-      if (name == SELECTED_FUNCTION_NAME){
-      
-      # Check if the row is commented
-      if (substring(name, 1, 1) == "#")
-        next
-      
-      n_val <- as.numeric(config[i, 2])
-      intercept <- as.numeric(config[i, 3])
-      col = counter + 2
-      cod <- read.table(name)             # Load table
-      n <- cod[,1]                        # Get n
-      cycles <- cod[,2]                   # Get cycles
-      flops <- n_val * n + intercept   # Compute flops
-      perf <- flops / cycles              # Get performance
-      perf_proc <- perf#/peak_performance * 100
-      data <- data.frame(x = n, y = perf_proc)
-      line = geom_line(data = data, aes(x=x, y=y), col = col)
-      p <- p + line + annotate("text", label = NAMES[counter], x = 1000, y = POSITION[counter], size = 6, colour = col)
-    }
-    }
-    counter <- counter + 1
+get_base_plot <- function(name){
+  p <- qplot(
+      main = name,
+      ylim = c(0, 6),
+      xlab = "Number of hidden layers [n]", 
+      ylab = "Performance [flops/cycle]", geom = "path") +
+      theme(axis.title.y = element_text(angle=y.axis.angle)) + 
+      geom_hline(yintercept = 16, col = 2) +
+  geom_hline(yintercept = 0, col = "black") +
+  geom_vline(xintercept = 0, col = "black") +
+      geom_hline(yintercept = old_peak_performance , col = "#dd0000", size = 0.8, alpha=1) +
+  annotate("text", label = "vec. peak performance", x = 1600, y = 15.5, size = 6, colour = "red") +
+  annotate("text", label = "scalar peak performance", x = 1600, y = 4.13, size = 5, colour = "#dd0000") + theme(text = element_text(size=20))
+  return(p)
 }
-setwd(cur_dir) # reset
-# Store plot
-jpeg(paste("./img/00_", img_name, "_compare.jpeg", sep = ""))
-print(p)
-dev.off()
+
+
+plot_compare <- function(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS){
+  p <- get_base_plot(SELECTED_FUNCTION_NAME)
+  counter <- length(DIRS)
+
+  while (counter > 0){
+      setwd(MAIN_DIR) # reset
+      dir = DIRS[counter]
+      print(dir)
+      setwd(dir)
+      # Open config file
+      config <- read.table("config") 
+      
+      for(i in 1:nrow(config)){
+        name <- as.character(config[i, 1])
+        if (name == SELECTED_FUNCTION_NAME){
+          # Check if the row is commented
+          if (substring(name, 1, 1) == "#")
+            next
+          
+          n_val <- as.numeric(config[i, 2])
+          intercept <- as.numeric(config[i, 3])
+          col = COLORS[counter]
+          cod <- read.table(name)             # Load table
+          n <- cod[,1]                        # Get n
+          cycles <- cod[,2]                   # Get cycles
+          flops <- n_val * n + intercept   # Compute flops
+          perf <- flops / cycles              # Get performance
+          perf_proc <- perf#/peak_performance * 100
+          data <- data.frame(x = n, y = perf_proc)
+          line <- geom_area(data = data, aes(x=x, y=y), col = col, alpha = 0.2, size=1) 
+          #line <- line + geom_area(stat = "identity")
+          p <- p + line + annotate("text", label = NAMES[counter], x = 1000, y = POSITION[counter], size = 6, colour = col)
+        }
+      }
+      counter <- counter - 1
+  }
+  setwd(MAIN_DIR) # reset
+  # Store plot
+  jpeg(paste("./img/00_", SELECTED_FUNCTION_NAME, "_compare.jpeg", sep = ""))
+  print(p)
+  dev.off()
+}
+
+
+
+
+
+
+###################################################################
+# W_update
+###################################################################
+# SELECTED_FUNCTION_NAME = "PERF_W_UPDATE"
+# NAMES = c("Baseline", "O3 optimization", "Best scalar", "Best vectorized")
+# DIRS = c( "./baseline/",
+#           "./scalar/W_update_onlyO3/",
+#           "./scalar/W_update_unroll4_O3_fma",
+#           "./vectorized/W_update_unroll16_O3_fma_Vectorize_double/")
+# POSITION = c(0.3, 0.9, 1.8, 3.0)
+# COLORS = c("#003300", "#555555", "#dd0000", "#0000ff")
+SELECTED_FUNCTION_NAME = "PERF_W_UPDATE"
+NAMES = c("Baseline", "Best scalar", "Best vectorized")
+DIRS = c( "./baseline/",
+          "./scalar/W_update_unroll4_O3_fma",
+          "./vectorized/W_update_unroll16_O3_fma_Vectorize_double/")
+POSITION = c(0.3, 1.8, 3.0)
+COLORS = c("#003300", "#dd0000", "#0000ff")
+
+
+plot_compare(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS)
+
+
+###################################################################
+# Gibbs_X
+###################################################################
+SELECTED_FUNCTION_NAME = "PERF_GIBBS_X"
+NAMES = c("Baseline", "W_update_O3", "Best scalar", "Best vectorized")
+DIRS = c( "./baseline/",
+          "./scalar/X_gibbs_O3/",
+          "./scalar/X_gibbs_unroll8_O3/",
+          "./vectorized/X_gibbs_unroll8_O3_Vectorize")
+POSITION = c(0.7, 1.7, 4.5)
+COLORS = c("#003300", "#555555", "#dd0000", "#0000ff")
+
+plot_compare(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS)
+
