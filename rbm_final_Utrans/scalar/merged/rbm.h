@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include "emmintrin.h"
+#include <immintrin.h>
 #include "tsc_x86.h"
 
 //RANDOM LINE ADDED
@@ -280,15 +282,65 @@ void h_update(double * h, int y0, int * x0){
     
 }
 
+double * img_tmp_mem0;
+double * img_tmp_mem1;
 
-void W_update()
+void W_update(double * x0, double * x1)
 {
+    __m128d w1, w2, w3, w4;
+    __m128d tmp11, tmp12, tmp13, tmp14, tmp21, tmp22, tmp23, tmp24;
+    __m128d x01d, x02d, x03d, x04d, x11d, x12d, x13d, x14d;
+    double h0scalar_lambda, h1scalar_lambda;
+    int iD;
     for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < D; j++)
+        iD = i * D;
+        // Store h0 and h1 into variable, and multiply by lambda
+        // so that we don't multiply inside of the inner loop
+        h0scalar_lambda = lambda * h0_cap[i];
+        h1scalar_lambda = lambda * h1_cap[i];
+        __m128d h0sc = _mm_load_sd(&h0scalar_lambda);
+        __m128d h1sc = _mm_load_sd(&h1scalar_lambda);
+        
+        for (int j = 0; j < D; j+=4)
         {
-            W[i * D + j] = W[i * D + j] + lambda * (h0_cap[i] * x0[j] - h1_cap[i] * x1[j]);
+            
+            w1 = _mm_load_sd(W + iD + j);
+            w2 = _mm_load_sd(W + iD + j + 1);
+            w3 = _mm_load_sd(W + iD + j + 2);
+            w4 = _mm_load_sd(W + iD + j + 3);
+            
+            x01d = _mm_load_sd(x0 + j);
+            x11d = _mm_load_sd(x1 + j);
+            x02d = _mm_load_sd(x0 + j + 1);
+            x12d = _mm_load_sd(x1 + j + 1);
+            x03d = _mm_load_sd(x0 + j + 2);
+            x13d = _mm_load_sd(x1 + j + 2);
+            x04d = _mm_load_sd(x0 + j + 3);
+            x14d = _mm_load_sd(x1 + j + 3);
+            
+            
+            tmp11 = _mm_fmsub_pd(h1sc, x11d, w1);
+            tmp12 = _mm_fmsub_pd(h1sc, x12d, w2);
+            tmp13 = _mm_fmsub_pd(h1sc, x13d, w3);
+            tmp14 = _mm_fmsub_pd(h1sc, x14d, w4);
+            
+            tmp21 = _mm_fmsub_pd(h0sc, x01d, tmp11);
+            tmp22 = _mm_fmsub_pd(h0sc, x02d, tmp12);
+            tmp23 = _mm_fmsub_pd(h0sc, x03d, tmp13);
+            tmp24 = _mm_fmsub_pd(h0sc, x04d, tmp14);
+            
+            // Note: The computation is done by the following:
+            // Original: W[iD+j] = W[iD+j] + (h0scalar_lambda * x0 - h1scalar_lambda * x1);
+            // Rearranged: W[iD+j] = h0scalar_lambda * x0 - (h1scalar_lambda * x1 - W[iD+j]);
+            
+            _mm_store_sd(W + iD + j, tmp21);
+            _mm_store_sd(W + iD + j + 1, tmp22);
+            _mm_store_sd(W + iD + j + 2, tmp23);
+            _mm_store_sd(W + iD + j + 3, tmp24);
+            
         }
+        // We don't need additional patch, because D mod 8 = 0
     }
 }
 
@@ -358,6 +410,8 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
                          double * b, double * c, double * d,
                          double * U, double * W, int n, int D, int K) //DONE
 {
+    img_tmp_mem0 = (double*)malloc(sizeof(double) * D);
+    img_tmp_mem1 = (double*)malloc(sizeof(double) * D);
     //Positive Phase
     int y0 = yi;
     x0 = xi;
@@ -440,15 +494,18 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     mean += delta/(double)count;
     m2 += delta*(cycles - mean);
 #endif
-    
-    
+   
+    for (int i = 0; i < D; i++){
+        img_tmp_mem0[i] = (double)x0[i];
+        img_tmp_mem1[i] = (double)x1[i];
+    }
     
     //Update Phase
 #ifdef PERF_W_UPDATE
     myInt64 start;
     start = start_tsc();
 #endif
-    W_update();
+    W_update(img_tmp_mem0, img_tmp_mem1);
 #ifdef PERF_W_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -700,24 +757,62 @@ int gibbs_Y_()
  */
 void gibbs_X_(int * x)
 {
-    for (int i = 0; i < D; i++)
+    double p1, p2, p3, p4, p5, p6, p7, p8;
+    double sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8;
+    double rand_n1, rand_n2, rand_n3, rand_n4, rand_n5, rand_n6, rand_n7, rand_n8;
+    double h0tmp;
+    
+    for (int i = 0; i < D; i+=8)
     {
-        double sum = b[i];
+        sum1 = b[i];
+        sum2 = b[i+1];
+        sum3 = b[i+2];
+        sum4 = b[i+3];
+        sum5 = b[i+4];
+        sum6 = b[i+5];
+        sum7 = b[i+6];
+        sum8 = b[i+7];
+        
         for (int j = 0; j < n ; j++)
         {
-            sum = sum + W[j * D + i] * h0[j];
+            h0tmp = h0[j];
+            
+            sum1 += W[j * D + i] * h0tmp;
+            sum2 += W[j * D + i+1] * h0tmp;
+            sum3 += W[j * D + i+2] * h0tmp;
+            sum4 += W[j * D + i+3] * h0tmp;
+            sum5 += W[j * D + i+4] * h0tmp;
+            sum6 += W[j * D + i+5] * h0tmp;
+            sum7 += W[j * D + i+6] * h0tmp;
+            sum8 += W[j * D + i+7] * h0tmp;
         }
         
-        double p = sigmoid(sum);
-        double rand_n = uniform();
-        if (rand_n < p)
-        {
-            x[i] = 1;
-        }
-        else
-        {
-            x[i] = 0;
-        }
+        p1 = sigmoid(sum1);
+        p2 = sigmoid(sum2);
+        p3 = sigmoid(sum3);
+        p4 = sigmoid(sum4);
+        p5 = sigmoid(sum5);
+        p6 = sigmoid(sum6);
+        p7 = sigmoid(sum7);
+        p8 = sigmoid(sum8);
+        
+        rand_n1 = uniform();
+        rand_n2 = uniform();
+        rand_n3 = uniform();
+        rand_n4 = uniform();
+        rand_n5 = uniform();
+        rand_n6 = uniform();
+        rand_n7 = uniform();
+        rand_n8 = uniform();
+        
+        if (rand_n1 < p1) x[i] = 1; else x[i] = 0;
+        if (rand_n2 < p2) x[i+1] = 1; else x[i+1] = 0;
+        if (rand_n3 < p3) x[i+2] = 1; else x[i+2] = 0;
+        if (rand_n4 < p4) x[i+3] = 1; else x[i+3] = 0;
+        if (rand_n5 < p5) x[i+4] = 1; else x[i+4] = 0;
+        if (rand_n6 < p6) x[i+5] = 1; else x[i+5] = 0;
+        if (rand_n7 < p7) x[i+6] = 1; else x[i+6] = 0;
+        if (rand_n8 < p8) x[i+7] = 1; else x[i+7] = 0;
     }
 }
 
