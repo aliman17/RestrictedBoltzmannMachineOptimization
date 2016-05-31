@@ -261,40 +261,66 @@ double sigmoid(double val)
  */
 void h_update(double * h, int y0, double * x0){
     
-    double sum, s1, s2, s3, s4, s5, s6, s7, s8;
+    double sum, s1, s2, s3, s4;
+    __m128d w5, w6, w7, w8, w13, w14, w15, w16;
+    __m128d x5, x6, x7, x8, x13, x14, x15, x16;
 
+    double sum2;
 
     for (int i = 0; i < n ; i++)
     {
-        s1 = 0;
-        s2 = 0;
-        s3 = 0;
-        s4 = 0;
-        s5 = 0;
-        s6 = 0;
-        s7 = 0;
-        s8 = 0;
+        __m128d s5 = {0};
+        __m128d s6 = {0};
+        __m128d s7 = {0};
+        __m128d s8 = {0};
+        int iD = i*D;
         for (int j = 0; j < D; j+=16)
         {
-            s1 = s1 + W[i * D + j] * x0[j];
-            s2 = s2 + W[i * D + j+1] * x0[j+1];
-            s3 = s3 + W[i * D + j+2] * x0[j+2];
-            s4 = s4 + W[i * D + j+3] * x0[j+3];
-            s5 = s5 + W[i * D + j+4] * x0[j+4];
-            s6 = s6 + W[i * D + j+5] * x0[j+5];
-            s7 = s7 + W[i * D + j+6] * x0[j+6];
-            s8 = s8 + W[i * D + j+7] * x0[j+7];
 
-            s1 = s1 + W[i * D + j+8] * x0[j+8];
-            s2 = s2 + W[i * D + j+9] * x0[j+9];
-            s3 = s3 + W[i * D + j+10] * x0[j+10];
-            s4 = s4 + W[i * D + j+11] * x0[j+11];
-            s5 = s5 + W[i * D + j+12] * x0[j+12];
-            s6 = s6 + W[i * D + j+13] * x0[j+13];
-            s7 = s7 + W[i * D + j+14] * x0[j+14];
-            s8 = s8 + W[i * D + j+15] * x0[j+15];
+            w5 = _mm_load_sd(W + iD + j + 4);
+            w6 = _mm_load_sd(W + iD + j + 5);
+            w7 = _mm_load_sd(W + iD + j + 6);
+            w8 = _mm_load_sd(W + iD + j + 7);
+            w13 = _mm_load_sd(W + iD + j + 12);
+            w14 = _mm_load_sd(W + iD + j + 13);
+            w15 = _mm_load_sd(W + iD + j + 14);
+            w16 = _mm_load_sd(W + iD + j + 15);
+
+            x5 = _mm_load_sd(x0 + j + 4);
+            x6 = _mm_load_sd(x0 + j + 5);
+            x7 = _mm_load_sd(x0 + j + 6);
+            x8 = _mm_load_sd(x0 + j + 7);
+            x13 = _mm_load_sd(x0 + j + 12);
+            x14 = _mm_load_sd(x0 + j + 13);
+            x15 = _mm_load_sd(x0 + j + 14);
+            x16 = _mm_load_sd(x0 + j + 15);
+
+
+            s1 = s1 + W[iD + j] * x0[j];
+            s2 = s2 + W[iD + j+1] * x0[j+1];
+            s3 = s3 + W[iD + j+2] * x0[j+2];
+            s4 = s4 + W[iD + j+3] * x0[j+3];
+
+            s1 = s1 + W[iD + j+8] * x0[j+8];
+            s2 = s2 + W[iD + j+9] * x0[j+9];
+            s3 = s3 + W[iD + j+10] * x0[j+10];
+            s4 = s4 + W[iD + j+11] * x0[j+11];
+
+            s5 = _mm_fmadd_sd(w5, x5, s5);
+            s6 = _mm_fmadd_sd(w6, x6, s6);
+            s7 = _mm_fmadd_sd(w7, x7, s7);
+            s8 = _mm_fmadd_sd(w8, x8, s8);
+            s5 = _mm_fmadd_sd(w13, x13, s5);
+            s6 = _mm_fmadd_sd(w14, x14, s6);
+            s7 = _mm_fmadd_sd(w15, x15, s7);
+            s8 = _mm_fmadd_sd(w16, x16, s8);
+
         }
-        sum = c[i] + s1+ s2+ s3+ s4+ s5+ s6+ s7+ s8;
+        s5 = _mm_add_sd(s5, s6);
+        s7 = _mm_add_sd(s7, s8);
+        s5 = _mm_add_sd(s5, s7);
+        _mm_store_sd(&sum2);
+        sum = c[i] + s1+ s2+ s3+ s4 + sum2;
         
         //Can be optimized
         for (int j = 0; j < K; j++)
