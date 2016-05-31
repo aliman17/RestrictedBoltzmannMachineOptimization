@@ -87,7 +87,7 @@ plot_roofline <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_b
 
   # Plot
   p <- qplot(log2(op.intensity), log2(perf_proc), 
-        xlab = "Number of hidden layers (log2)",
+        xlab = "Operational Intensity (log2)",
         ylab = "performance (log2)",
         #ylim = c(0, 100),
         main = paste("Cycles: ", floor(cycles))) +
