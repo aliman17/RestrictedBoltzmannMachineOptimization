@@ -259,16 +259,45 @@ double sigmoid(double val)
  * This function if more general then the previous one for h0_cap
  * h <- sigmoid( c + Wx + Uy )
  */
-void h_update(double * h, int y0, int * x0){
+void h_update(double * h, int y0, double * x0){
+    
+    double sum, s1, s2, s3, s4;
+    __m256d w1, w2, w3, w4;
+    __m256d x1, x2, x3, x4;
+    double sum2[4];
     
     for (int i = 0; i < n ; i++)
     {
-        double sum = c[i];
-        for (int j = 0; j < D; j++)
+        __m256d s1 = {0, 0, 0, 0};
+        __m256d s2 = {0, 0, 0, 0};
+        __m256d s3 = {0, 0, 0, 0};
+        __m256d s4 = {0, 0, 0, 0};
+        int iD = i*D;
+        for (int j = 0; j < D; j+=16)
         {
-            sum = sum + W[i * D + j] * x0[j];
+            
+            w1 = _mm256_loadu_pd(W + iD + j);
+            w2 = _mm256_loadu_pd(W + iD + j + 4);
+            w3 = _mm256_loadu_pd(W + iD + j + 8);
+            w4 = _mm256_loadu_pd(W + iD + j + 12);
+            
+            x1 = _mm256_loadu_pd(x0 + j );
+            x2 = _mm256_loadu_pd(x0 + j + 4);
+            x3 = _mm256_loadu_pd(x0 + j + 8);
+            x4 = _mm256_loadu_pd(x0 + j + 12);
+            
+            s1 = _mm256_fmadd_pd(w1, x1, s1);
+            s2 = _mm256_fmadd_pd(w2, x2, s2);
+            s3 = _mm256_fmadd_pd(w3, x3, s3);
+            s4 = _mm256_fmadd_pd(w4, x4, s4);
+            
         }
+        s1 = _mm256_add_pd(s1, s2);
+        s3 = _mm256_add_pd(s3, s4);
+        s1 = _mm256_add_pd(s1, s3);
         
+        _mm256_store_pd(sum2, s1);
+        sum = c[i] + sum2[0] + sum2[1] + sum2[2] + sum2[3];
         
         //Can be optimized
         for (int j = 0; j < K; j++)
@@ -278,6 +307,7 @@ void h_update(double * h, int y0, int * x0){
         
         h[i] = sigmoid(sum);
     }
+
     
 }
 
@@ -461,12 +491,17 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     
     //double * h0_cap = (double *) malloc(sizeof(double) * n);
     
+    
+    double* x0d = (double*)malloc(sizeof(double)*n);
+    for (int i = 0; i < n; i++)
+        x0d[i] = (double)x0[i];
+    
     // Here we update h0_cap <- sigmoid( c + Wx0 + Uy0 )
 #ifdef PERF_H0_UPDATE
     myInt64 start;
     start = start_tsc();
 #endif
-    h_update(h0_cap, y0, x0);
+    h_update(h0_cap, y0, x0d);
 #ifdef PERF_H0_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -522,14 +557,16 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
 #endif
     
     
-    
+    double* x1d = (double*)malloc(sizeof(double)*n);
+    for (int i = 0; i < n; i++)
+        x1d[i] = (double)x1[i];
     
     // Here we update h1_cap <- sigmoid( c + Wx1 + Uy1 )
 #ifdef PERF_H1_UPDATE
     myInt64 start;
     start = start_tsc();
 #endif
-    h_update(h1_cap, y1, x1);
+    h_update(h1_cap, y1, x1d);
 #ifdef PERF_H1_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
