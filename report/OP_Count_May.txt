@@ -1,0 +1,10 @@
+# function, flops, byte transfer, cache byte transfer
+
+h_update: n*(2D+1), n(24+12D)
+W_update: 5nd, 19nD, cache 40nD
+b_update: 3D, 3D
+c_update: 3D, 6D
+U_update: 4n, 20n
+H_gibbs: n(2D+1), 19n              n(3D+20)
+Y_gibbs: n(2K) + 21K+10, n(3K) + 18K
+X_gibbs: n(2D) + 40D, 2.5nD + 12D, 12Dn + 12D

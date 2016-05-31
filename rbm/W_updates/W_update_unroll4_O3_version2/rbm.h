@@ -285,6 +285,7 @@ double * img_tmp_mem1;
 void W_update(double * W, double * h0_cap, double * h1_cap,
               double * x0, double * x1, double lambda, int n, int D){
 
+    // n4D+2, n(3D + 16)
     double h0scalar_lambda, h1scalar_lambda;
     int iD;
     for (int i = 0; i < n; i++)
