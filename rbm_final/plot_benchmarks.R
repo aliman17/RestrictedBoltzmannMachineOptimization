@@ -72,10 +72,10 @@ plot_roofline <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_b
     theme(axis.title.y = element_text(angle=y.axis.angle)) +
     geom_hline(yintercept = (peak_performance), col = 2) +
     geom_hline(yintercept = (old_peak_performance) , col = "grey") +
-    annotate("text", label = "vec. peak performance", x = 1, y = 15.7, size = 4, colour = "red") +
-    annotate("text", label = "old peak performance", x = 1, y = 3.8, size = 4, colour = "grey") +
-    annotate("text", label = "memory bound", x = 1.22, y = 10, size = 4, colour = "red") +
-    annotate("text", label = "cache bound", x = 0.45, y = 9.4, size = 4, colour = "red")
+    annotate("text", label = "vec. peak performance", x = 1, y = 15.7, size = 6, colour = "red") +
+    annotate("text", label = "old peak performance", x = 1, y = 3.8, size = 6, colour = "grey") +
+    annotate("text", label = "memory bound", x = 1.22, y = 10, size = 6, colour = "red") +
+    annotate("text", label = "cache bound", x = 0.45, y = 9.4, size = 6, colour = "red") + theme(text = element_text(size=20))
     #annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
     
     return(p)
