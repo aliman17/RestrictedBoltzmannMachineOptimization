@@ -54,7 +54,7 @@ int * x0;
 
 
 double energy_for_all();
-void gibbs_H(int y0);
+void gibbs_H(int y0, double * x0);
 int gibbs_Y_();
 void gibbs_X_(int * x);
 
@@ -517,7 +517,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    gibbs_H(y0);
+    gibbs_H(y0, x0d);
 #ifdef PERF_GIBBS_H
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -764,25 +764,55 @@ double energy_for_all()
  Gibbs samplings for H (hidden nodes)
  Modifies h0 gibbs_H(h0, y0, x0);
  */
-void gibbs_H(int y0)
+void gibbs_H(int y0, double * x0)
 {
-    for (int j = 0; j < n; j++)
+    double sum, s1, s2, s3, s4;
+    __m256d w1, w2, w3, w4;
+    __m256d x1, x2, x3, x4;
+    double sum2[4];
+    
+    for (int i = 0; i < n ; i++)
     {
-        double sum = c[j] + U[y0 * n + j];
-        for (int i = 0; i < D; i++)
+        __m256d s1 = {0, 0, 0, 0};
+        __m256d s2 = {0, 0, 0, 0};
+        __m256d s3 = {0, 0, 0, 0};
+        __m256d s4 = {0, 0, 0, 0};
+        int iD = i*D;
+        for (int j = 0; j < D; j+=16)
         {
-            sum = sum + W[j * D + i] * x0[i];
+            
+            w1 = _mm256_loadu_pd(W + iD + j);
+            w2 = _mm256_loadu_pd(W + iD + j + 4);
+            w3 = _mm256_loadu_pd(W + iD + j + 8);
+            w4 = _mm256_loadu_pd(W + iD + j + 12);
+            
+            x1 = _mm256_loadu_pd(x0 + j );
+            x2 = _mm256_loadu_pd(x0 + j + 4);
+            x3 = _mm256_loadu_pd(x0 + j + 8);
+            x4 = _mm256_loadu_pd(x0 + j + 12);
+            
+            s1 = _mm256_fmadd_pd(w1, x1, s1);
+            s2 = _mm256_fmadd_pd(w2, x2, s2);
+            s3 = _mm256_fmadd_pd(w3, x3, s3);
+            s4 = _mm256_fmadd_pd(w4, x4, s4);
+            
         }
+        s1 = _mm256_add_pd(s1, s2);
+        s3 = _mm256_add_pd(s3, s4);
+        s1 = _mm256_add_pd(s1, s3);
+        
+        _mm256_store_pd(sum2, s1);
+        sum = c[i] + U[y0 * n + i] + sum2[0] + sum2[1] + sum2[2] + sum2[3];
         
         double p = sigmoid(sum);
         double rand = uniform();
         if (rand < p)
         {
-            h0[j] = 1;
+            h0[i] = 1;
         }
         else
         {
-            h0[j] = 0;
+            h0[i] = 0;
         }
     }
 }
