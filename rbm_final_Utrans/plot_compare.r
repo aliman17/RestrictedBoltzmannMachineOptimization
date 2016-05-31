@@ -6,11 +6,10 @@ old_peak_performance <- 4
 library(ggplot2)
 y.axis.angle = 90
 
-
-get_base_plot <- function(name){
+get_base_plot <- function(name, y_lim){
   p <- qplot(
       main = name,
-      ylim = c(0, 6),
+      ylim = y_lim,
       xlab = "Number of hidden layers [n]", 
       ylab = "Performance [flops/cycle]", geom = "path") +
       theme(axis.title.y = element_text(angle=y.axis.angle)) + 
@@ -24,8 +23,8 @@ get_base_plot <- function(name){
 }
 
 
-plot_compare <- function(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS){
-  p <- get_base_plot(SELECTED_FUNCTION_NAME)
+plot_compare <- function(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS, y_lim){
+  p <- get_base_plot(SELECTED_FUNCTION_NAME, y_lim)
   counter <- length(DIRS)
 
   while (counter > 0){
@@ -69,43 +68,16 @@ plot_compare <- function(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS){
 
 
 
-
-
-
-###################################################################
-# W_update
-###################################################################
-# SELECTED_FUNCTION_NAME = "PERF_W_UPDATE"
-# NAMES = c("Baseline", "O3 optimization", "Best scalar", "Best vectorized")
-# DIRS = c( "./baseline/",
-#           "./scalar/W_update_onlyO3/",
-#           "./scalar/W_update_unroll4_O3_fma",
-#           "./vectorized/W_update_unroll16_O3_fma_Vectorize_double/")
-# POSITION = c(0.3, 0.9, 1.8, 3.0)
-# COLORS = c("#003300", "#555555", "#dd0000", "#0000ff")
-SELECTED_FUNCTION_NAME = "PERF_W_UPDATE"
-NAMES = c("Baseline", "Best scalar", "Best vectorized")
-DIRS = c( "./baseline/",
-          "./scalar/W_update_unroll4_O3_fma",
-          "./vectorized/W_update_unroll16_O3_fma_Vectorize_double/")
-POSITION = c(0.3, 1.8, 3.0)
-COLORS = c("#003300", "#dd0000", "#0000ff")
-
-
-plot_compare(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS)
-
-
 ###################################################################
 # Gibbs_X
 ###################################################################
-SELECTED_FUNCTION_NAME = "PERF_GIBBS_X"
-NAMES = c("Baseline", "W_update_O3", "Best scalar", "Best vectorized")
+SELECTED_FUNCTION_NAME = "PERF_COD_TRAIN_UPDATE"
+NAMES = c("Baseline", "Scalar", "Vectorized")
 DIRS = c( "./baseline/",
-          "./scalar/X_gibbs_O3/",
-          "./scalar/X_gibbs_unroll8_O3/",
-          "./vectorized/X_gibbs_unroll8_O3_Vectorize")
-POSITION = c(0.7, 1.7, 4.5)
-COLORS = c("#003300", "#555555", "#dd0000", "#0000ff")
+          "./scalar/merged/",
+          "./vector/merged/")
+POSITION = c(0.12, 0.9, 2.0)
+COLORS = c("#003300", "#dd0000", "#0000ff")
 
-plot_compare(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS)
+plot_compare(SELECTED_FUNCTION_NAME, NAMES, POSITION, COLORS, DIRS, c(0, 4))
 
