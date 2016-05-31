@@ -281,16 +281,104 @@ void h_update(double * h, int y0, int * x0){
     
 }
 
+double * img_tmp_mem0;
+double * img_tmp_mem1;
 
-void W_update()
+void W_update(double * x0, double * x1)
 {
+    __m256d w1, w2, w3, w4;
+    __m256d tmp11, tmp12, tmp13, tmp14, tmp21, tmp22, tmp23, tmp24;
+    //__m256d x01d, x02d, x03d, x04d, x11d, x12d, x13d, x14d;
+    double h0scalar_lambda, h1scalar_lambda;
+    int iD;
     for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < D; j++)
+        iD = i * D;
+        // Store h0 and h1 into variable, and multiply by lambda
+        // so that we don't multiply inside of the inner loop
+        h0scalar_lambda = lambda * h0_cap[i];
+        h1scalar_lambda = lambda * h1_cap[i];
+        __m256d h0sc = {h0scalar_lambda, h0scalar_lambda, h0scalar_lambda, h0scalar_lambda};
+        __m256d h1sc = {h1scalar_lambda, h1scalar_lambda, h1scalar_lambda, h1scalar_lambda};
+        for (int j = 0; j < D; j+=16)
         {
-            W[i * D + j] = W[i * D + j] + lambda * (h0_cap[i] * x0[j] - h1_cap[i] * x1[j]);
+            
+            w1 = _mm256_loadu_pd(W + iD + j);
+            w2 = _mm256_loadu_pd(W + iD + j + 4);
+            w3 = _mm256_loadu_pd(W + iD + j + 8);
+            w4 = _mm256_loadu_pd(W + iD + j + 12);
+            
+            __m256d x01d = { x0[j],
+                x0[j+1],
+                x0[j+2],
+                x0[j+3]
+            };
+            
+            __m256d x11d = { x1[j],
+                x1[j+1],
+                x1[j+2],
+                x1[j+3]
+            };
+            
+            __m256d x02d = { x0[j + 4],
+                x0[j+5],
+                x0[j+6],
+                x0[j+7]
+            };
+            
+            __m256d x12d = { x1[j + 4],
+                x1[j+5],
+                x1[j+6],
+                x1[j+7]
+            };
+            
+            __m256d x03d = { x0[j + 8],
+                x0[j+9],
+                x0[j+10],
+                x0[j+11]
+            };
+            
+            __m256d x13d = { x1[j + 8],
+                x1[j+9],
+                x1[j+10],
+                x1[j+11]
+            };
+            
+            __m256d x04d = { x0[j+12],
+                x0[j+13],
+                x0[j+14],
+                x0[j+15]
+            };
+            
+            __m256d x14d = { x1[j + 12],
+                x1[j+13],
+                x1[j+14],
+                x1[j+15]
+            };
+            
+            tmp11 = _mm256_fmsub_pd(h1sc, x11d, w1);
+            tmp12 = _mm256_fmsub_pd(h1sc, x12d, w2);
+            tmp13 = _mm256_fmsub_pd(h1sc, x13d, w3);
+            tmp14 = _mm256_fmsub_pd(h1sc, x14d, w4);
+            
+            tmp21 = _mm256_fmsub_pd(h0sc, x01d, tmp11);
+            tmp22 = _mm256_fmsub_pd(h0sc, x02d, tmp12);
+            tmp23 = _mm256_fmsub_pd(h0sc, x03d, tmp13);
+            tmp24 = _mm256_fmsub_pd(h0sc, x04d, tmp14);
+            
+            // Note: The computation is done by the following:
+            // Original: W[iD+j] = W[iD+j] + (h0scalar_lambda * x0 - h1scalar_lambda * x1);
+            // Rearranged: W[iD+j] = h0scalar_lambda * x0 - (h1scalar_lambda * x1 - W[iD+j]);
+            
+            _mm256_store_pd(W + iD + j, tmp21);
+            _mm256_store_pd(W + iD + j + 4, tmp22);
+            _mm256_store_pd(W + iD + j + 8, tmp23);
+            _mm256_store_pd(W + iD + j + 12, tmp24);
+            
         }
+        // We don't need additional patch, because D mod 8 = 0
     }
+
 }
 
 void b_update()
@@ -364,6 +452,9 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
                          double * b, double * c, double * d,
                          double * U, double * W, int n, int D, int K) //DONE
 {
+    img_tmp_mem0 = (double*)malloc(sizeof(double) * D);
+    img_tmp_mem1 = (double*)malloc(sizeof(double) * D);
+    
     //Positive Phase
     int y0 = yi;
     x0 = xi;
@@ -446,7 +537,12 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     mean += delta/(double)count;
     m2 += delta*(cycles - mean);
 #endif
+   
     
+    for (int i = 0; i < D; i++){
+        img_tmp_mem0[i] = (double)x0[i];
+        img_tmp_mem1[i] = (double)x1[i];
+    }
     
     
     //Update Phase
@@ -454,7 +550,7 @@ void COD_training_update(int yi, int * xi, double * h0_cap,
     myInt64 start;
     start = start_tsc();
 #endif
-    W_update();
+    W_update(img_tmp_mem0, img_tmp_mem1);
 #ifdef PERF_W_UPDATE
     myInt64 cycles = stop_tsc(start);
     count = count + 1;
@@ -706,24 +802,63 @@ int gibbs_Y_()
  */
 void gibbs_X_(int * x)
 {
-    for (int i = 0; i < D; i++)
+    double p1, p2, p3, p4, p5, p6, p7, p8;
+    __m256d sum1, sum2, w1, w2;
+    double rand_n1, rand_n2, rand_n3, rand_n4, rand_n5, rand_n6, rand_n7, rand_n8;
+    double h0tmp;
+    int jD, iD;
+    double arrsum1[4], arrsum2[4];
+    
+    for (int i = 0; i < D; i+=8)
     {
-        double sum = b[i];
+        iD = i*D;
+        sum1 = _mm256_loadu_pd(b);
+        sum2 = _mm256_loadu_pd(b+4);
+        
+        
         for (int j = 0; j < n ; j++)
         {
-            sum = sum + W[j * D + i] * h0[j];
+            jD = j * D;
+            h0tmp = h0[j];
+            __m256d h0tmpv = {h0tmp, h0tmp, h0tmp, h0tmp};
+            
+            w1 = _mm256_loadu_pd(W+jD + i);
+            w2 = _mm256_loadu_pd(W+jD + i + 4);
+            
+            sum1 = _mm256_fmadd_pd(w1, h0tmpv, sum1);
+            sum2 = _mm256_fmadd_pd(w2, h0tmpv, sum2);
+            
         }
         
-        double p = sigmoid(sum);
-        double rand_n = uniform();
-        if (rand_n < p)
-        {
-            x[i] = 1;
-        }
-        else
-        {
-            x[i] = 0;
-        }
+        _mm256_store_pd(arrsum1, sum1);
+        _mm256_store_pd(arrsum2, sum2);
+        
+        p1 = sigmoid(arrsum1[0]);
+        p2 = sigmoid(arrsum1[1]);
+        p3 = sigmoid(arrsum1[2]);
+        p4 = sigmoid(arrsum1[3]);
+        p5 = sigmoid(arrsum2[0]);
+        p6 = sigmoid(arrsum2[1]);
+        p7 = sigmoid(arrsum2[2]);
+        p8 = sigmoid(arrsum2[3]);
+        
+        rand_n1 = uniform();
+        rand_n2 = uniform();
+        rand_n3 = uniform();
+        rand_n4 = uniform();
+        rand_n5 = uniform();
+        rand_n6 = uniform();
+        rand_n7 = uniform();
+        rand_n8 = uniform();
+        
+        if (rand_n1 < p1) x[i] = 1; else x[i] = 0;
+        if (rand_n2 < p2) x[i+1] = 1; else x[i+1] = 0;
+        if (rand_n3 < p3) x[i+2] = 1; else x[i+2] = 0;
+        if (rand_n4 < p4) x[i+3] = 1; else x[i+3] = 0;
+        if (rand_n5 < p5) x[i+4] = 1; else x[i+4] = 0;
+        if (rand_n6 < p6) x[i+5] = 1; else x[i+5] = 0;
+        if (rand_n7 < p7) x[i+6] = 1; else x[i+6] = 0;
+        if (rand_n8 < p8) x[i+7] = 1; else x[i+7] = 0;
     }
 }
 
