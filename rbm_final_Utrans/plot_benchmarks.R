@@ -9,60 +9,15 @@ if (length(args)!=1) {
   setwd(current_dir)
 }
 
-#folder <- args[2]
-
-# Set working directory to the folder with measuring data
+print("Start plotting ...")
 library(ggplot2)
-#setwd("~/Desktop/GIT/FastNumericalCode/rbm/update1")
-#setwd(paste(current_dir, "/", folder, sep = ""))
 
 y.axis.angle = 90
-
-# Multiple plot function
-#
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
-#
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
-
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-
-  numPlots = length(plots)
-
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                    ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-
- if (numPlots==1) {
-    print(plots[[1]])
-
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
+ghz = 2.6
+bandwidth = 25.6
+peak_performance <- 16       
+old_peak_performance <- 4
+CACHE_BANDWIDTH <- 32
 
 plot_perf <- function(name, n_koef, n_intercept){
   cod <- read.table(name)             # Load table
@@ -70,7 +25,6 @@ plot_perf <- function(name, n_koef, n_intercept){
   cycles <- cod[,2]                   # Get cycles
   flops <- n_koef * n + n_intercept   # Compute flops 
   perf <- flops / cycles              # Get performance
-  peak_performance <- 4               # Set peak performance
  
   perf_proc <- perf/peak_performance * 100
 
@@ -82,11 +36,86 @@ plot_perf <- function(name, n_koef, n_intercept){
         main = paste("Cycles: ", floor(cycles))) +
     theme(axis.title.y = element_text(angle=y.axis.angle)) + 
     geom_hline(yintercept = 100, col = 2) +
-    annotate("text", label = "peak performance", x = 400, y = 95, size = 4, colour = "red") +
-    annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+    geom_hline(yintercept = 100 * (old_peak_performance/peak_performance) , col = "grey") +
+    annotate("text", label = "vec. peak performance", x = 600, y = 98, size = 4, colour = "red") +
+    annotate("text", label = "old peak performance", x = 600, y = 23, size = 4, colour = "grey") +
+    annotate("text", label = substring(name, 6), x = 300, y = max(perf_proc)+10, size = 4, colour = "black")
 
   return(p)
 }
+
+
+plot_roofline <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
+{
+    cod <- read.table(name)             # Load table
+    n <- cod[,1]                        # Get n
+    cycles <- cod[,2]                   # Get cycles
+    flops <- n_koef * n + n_intercept   # Compute flops
+    perf <- flops / cycles              # Get performance
+    
+    cost <- n_cost * n + intercept_cost
+    byte <- n_byte * n + intercept_byte
+    
+    op.intensity <- cost/byte
+    
+    perf_proc <- perf
+    
+    # Plot
+    p <- qplot((op.intensity), (perf_proc),
+    xlab = "Operational Intensity [flops/byte]",
+    ylab = "Performance [flops/cycle]",
+    #ylim = c(0, 100),
+    main = paste("Cycles: ", floor(cycles))) +
+    geom_text(aes(label=n))+
+    geom_line(aes((c(0, peak_performance/PI)), (c(0, peak_performance))), col = 2) +
+    geom_line(aes((c(0, 1/2)), (c(0, 1/2 * CACHE_BANDWIDTH))), col = 2) +
+    theme(axis.title.y = element_text(angle=y.axis.angle)) +
+    geom_hline(yintercept = (peak_performance), col = 2) +
+    geom_hline(yintercept = (old_peak_performance) , col = "grey") +
+    annotate("text", label = "vec. peak performance", x = 1, y = 15.7, size = 4, colour = "red") +
+    annotate("text", label = "old peak performance", x = 1, y = 3.8, size = 4, colour = "grey") +
+    annotate("text", label = "memory bound", x = 1.22, y = 10, size = 4, colour = "red") +
+    annotate("text", label = "cache bound", x = 0.45, y = 9.4, size = 4, colour = "red")
+    #annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+    
+    return(p)
+}
+
+
+
+plot_roofline_cache <- function(name, n_koef, n_intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
+{
+    cod <- read.table(name)             # Load table
+    n <- cod[,1]                        # Get n
+    cycles <- cod[,2]                   # Get cycles
+    flops <- n_koef * n + n_intercept   # Compute flops
+    perf <- flops / cycles              # Get performance
+    
+    cost <- n_cost * n + intercept_cost
+    byte <- n_byte * n + intercept_byte
+    
+    op.intensity <- cost/byte
+    
+    perf_proc <- perf
+    
+    # Plot
+    p <- qplot((op.intensity), (perf_proc),
+    xlab = "Operational Intensity [flops/byte]",
+    ylab = "Performance [flops/cycle]",
+    #ylim = c(0, 100),
+    main = paste("Cycles: ", floor(cycles))) +
+    geom_text(aes(label=n))+
+    geom_line(aes((c(1/20, peak_performance/PI)), (c(1/20 * PI, peak_performance))), col = 2) +
+    theme(axis.title.y = element_text(angle=y.axis.angle)) +
+    geom_hline(yintercept = (peak_performance), col = 2) +
+    geom_hline(yintercept = (old_peak_performance) , col = "grey") +
+    annotate("text", label = "vec. peak performance", x = 1, y = 15.7, size = 4, colour = "red") +
+    annotate("text", label = "old peak performance", x = 1, y = 3.8, size = 4, colour = "grey")
+    #annotate("text", label = substring(name, 6), x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+    
+    return(p)
+}
+
 
 # Open config file
 config <- read.table("config") 
@@ -99,14 +128,39 @@ for(i in 1:nrow(config)){
   if (substring(name, 1, 1) == "#")
     next
   
+  # Performance
   n_val <- as.numeric(config[i, 2])
   intercept <- as.numeric(config[i, 3])
   plot <- plot_perf(name, n_val, intercept)
-  #plots <- c(plot)
-  # Store plot
   jpeg(paste("00", name, ".jpeg", sep = ""))
   print(plot)
   dev.off()
+
+  # Roofline for memory
+  if (ncol(config) > 3){
+    n_cost <- as.numeric(config[i, 4])
+    intercept_cost <- as.numeric(config[i, 5])
+    n_byte <- as.numeric(config[i, 6])
+    intercept_byte <- as.numeric(config[i, 7])
+    PI <- bandwidth / ghz
+    plot <- plot_roofline(name, n_val, intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
+    jpeg(paste("00", name, "_roofline.jpeg", sep = ""))
+    print(plot)
+    dev.off()
+  }
+  
+  # Roofline for cache
+  if (ncol(config) > 7){
+    n_cost <- as.numeric(config[i, 4])
+    intercept_cost <- as.numeric(config[i, 5])
+    n_byte <- as.numeric(config[i, 8])
+    intercept_byte <- as.numeric(config[i, 9])
+    PI <- CACHE_BANDWIDTH
+    plot <- plot_roofline_cache(name, n_val, intercept, n_cost, intercept_cost, n_byte, intercept_byte, PI)
+    jpeg(paste("00", name, "_roofline_cache.jpeg", sep = ""))
+    print(plot)
+    dev.off()
+  }
 }
-#multiplot(plotlist = plots, col = 2)
-#dev.off()
+
+print("Plot finished!")
