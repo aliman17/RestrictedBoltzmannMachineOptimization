@@ -1,0 +1,31 @@
+# function, flops, byte transfer, cache byte transfer
+
+h_update: n*(2D+1), n(24+12D)
+W_update: 5nd, 19nD, cache 40nD
+b_update: 3D, 3D
+c_update: 3n, 6n
+U_update: 4n, 20n
+H_gibbs: n(2D+1), 19n              n(3D+20)
+Y_gibbs: n(2K) + 21K+10, n(3K) + 18K
+X_gibbs: n(2D) + 40D, 2.5nD + 12D, 12Dn + 12D
+
+
+
+h_update: 1569 0, 9432 0
+W_update: 3920 0, 14896 0, cache 31360 0
+b_update: 0 2352, 0 2352
+c_update: 3 0, 6 0  
+U_update: 4 0, 20 0
+H_gibbs: 1569 0, 2372 0
+Y_gibbs: 20 220, 30 180
+X_gibbs: 1568 31360, 1960 9408, 9408 9408
+
+
+For outer H
+PERF_W_UPDATE 3920 0 3920 0 18880 0
+
+PERF_W_UPDATE 3920 0 3920 0 18880 0
+PERF_H0_UPDATE 1569 0 1569 0 12568 0
+PERF_GIBBS_X 1568 31360 1568 31360 12544 12544
+PERF_GIBBS_H 1579 0 1579 0 12568 0
+PERF_COD_TRAIN_UPDATE 10222 33932 10222 33932 56560 12544

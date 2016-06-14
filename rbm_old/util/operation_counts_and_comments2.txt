@@ -1,0 +1,156 @@
+H_update: 
+	adds: 	n 794 
+	mults: 	n 784
+	sigmoid: 4n
+	reads: 	n 1579
+	writes: n
+	if: 	nK  (should we count them???)
+
+	All: 1582n
+
+	Comment: 1st inner loop: loop unrolling + scalar replacement
+			 2nd inner loop: full unrolling (K = 10)
+			 outer loop: unrolling + scalar replacement
+			 vector SIMD
+			 consider cache misses (blocking?, ...)
+			 if vs mask???
+
+sigmoid:
+	adds:	2
+	mults:	
+	div:	1
+	exp:	1
+
+	All: 4
+
+W_update:
+	adds:	2nD
+	mults:	3nD
+	reads:	5nD
+	writes: nD
+
+	All: 3930n
+
+	Comment: loop unrolling + scalar replacement to rearrange adds and mults
+			 SIMD instructions
+
+
+b_update:
+	adds: 	2D
+	mults:	D
+	read:	3D
+	writes: D
+
+	All: 2358
+
+	Comment: loop unrolling
+			 SIMD instructions
+
+c_update:
+	adds:	2n
+	mults: 	n
+	reads:	3n
+	writes: n
+
+	All: 3n
+
+	Comment: loop unrolling
+			 SIMD instructions
+
+d_update:
+	adds: 	bound at most 2K
+	mults:	0
+	reads:	K
+	writes:	2K
+
+	All: 20
+
+	Comment: is it possible to do sth with IFs???
+
+U_update:
+	adds: 	2nK
+	mults:	2nK
+	reads:	3nK
+	writes: 2nK 
+
+	All of them upper bound
+	All: 40n
+
+	Comment: IFs???
+
+gibbs_H:
+	adds:	n787
+	mults:	n786
+	sigmoid: 4n
+	uniform: 2n
+	reads:	n(2 + 2D)
+	writes: n
+	ifs:	n
+
+	All: 1579n
+
+	Comment: inner loop - loop unrolling + scallar replacement
+			 outer loop - loop unrolling
+			 SIMD instructions	
+
+gibbs_Y:
+	adds: 	10n + 11
+	mults:	10n
+	divs:	10
+	uniform: 2
+	reads:	20n + 40
+	writes:	K + K
+	ifs:	K
+	allocation: K doubles
+
+	All: 20n + 23
+
+	Comment: loop unrolling
+			 full unrolling of K-loops
+			 SIMD instructions
+
+gibbs_X:
+	adds:	Dn
+	mults:	Dn
+	sigmoid	4D
+	uniform 2D
+	reads:	D + 2nD
+	writes:	D
+	ifs:	D
+
+	All: 1572n + 4716
+
+	Comment: loop unrolling + sc. replacement
+			 SIMD instructions
+
+
+uniform:
+	rand:	1
+	div:	1
+
+	All: 2
+
+COD_training_update:
+	h_update
+	allocations: n ints, D ints, n doubles
+	gibbs_H
+	...
+
+	All flops: 10308n + 7117
+
+COD_train:
+	2500*(10308n + 7117)
+
+Predict:
+	adds:	nD + n + 3Kn + K
+	mults:	nD
+	log:	Kn
+	exp:	Kn
+	reads:	2nD + n + 2Kn + K + K
+	writes:	n + K
+	ifs: 	K
+
+	allocations: n doubles, K doubles, 
+
+
+

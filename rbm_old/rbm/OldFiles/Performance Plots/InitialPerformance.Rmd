@@ -1,0 +1,340 @@
+---
+title: "Initial Performance"
+author: "Prabhakaran, Sergio, Ales"
+date: "28 April 2016"
+output: pdf_document
+---
+
+```{r echo=FALSE}
+# Set working directory to the folder with measuring data
+setwd("~/Desktop/GIT/FastNumericalCode/rbm/Performance\ Plots/")
+y.axis.angle = 90
+
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+
+# Performance
+
+```{r, echo=FALSE}
+library(ggplot2)
+
+cod <- read.table("perf_cod_train")
+
+# Increasing n is stored in the first column
+n <- cod[,1]
+# cycles
+cycles <- cod[,2]
+p1 <- qplot(n, cycles, 
+      xlab = "Number of hidden layers", 
+      ylab = "Cycles", geom = "path",
+      main = "Number of hidden layers") +
+  theme(axis.title.y = element_text(angle=y.axis.angle))
+```
+
+
+```{r echo=FALSE}
+cod <- read.table("perf_cod_train")
+
+# Increasing n is stored in the first column, cycles in the second one
+n <- cod[,1]
+cycles <- cod[,2]
+
+# Compute number of flops
+flops <- 2500*(10272*n + 7099)
+
+# Performance
+perf <- flops / cycles
+par(mfrow=c(2, 1))
+p2 <- qplot(n, perf, 
+      xlab = "Number of hidden layers", 
+      ylab = "Performance", geom = "path",
+      main = "Performance (flops/cycle)") +
+  theme(axis.title.y = element_text(angle=y.axis.angle))+
+  annotate("text", label = "our algorithm performance", x = 600, y = max(perf), size = 4, colour = "black")
+```
+
+
+```{r echo=FALSE}
+peak_performance <- 2
+perf_proc <- perf/peak_performance * 100
+
+p3 <- qplot(n, perf/peak_performance * 100, 
+      xlab = "Number of hidden layers", 
+      ylab = "% of peak performance", geom = "path",
+      ylim = c(0, 100)) +
+  theme(axis.title.y = element_text(angle=y.axis.angle)) + 
+  geom_hline(yintercept = 100, col = 2) +
+  annotate("text", label = "peak performance", x = 400, y = 95, size = 4, colour = "red") +
+  annotate("text", label = "our algorithm performance", x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+```
+
+```{r echo=FALSE}
+m <- matrix(c(1,2,3,3), nrow=2, byrow=TRUE)
+multiplot(p1, p2, p3, cols = 1)
+```
+
+Note: The peak performance is just a little bit over 2 flops/cycle but that is not significant.
+
+
+# Functions Performance 
+
+Note: Compiltion with O0 and no vectorization
+
+```{r echo=FALSE}
+
+plot_perf <- function(name, n_koef, n_intercept){
+  cod <- read.table(name)             # Load table
+  n <- cod[,1]                        # Get n
+  cycles <- cod[,2]                   # Get cycles
+  flops <- n_koef * n + n_intercept   # Compute flops 
+  perf <- flops / cycles              # Get performance
+  peak_performance <- 2               # Set peak performance
+  
+  perf_proc <- perf/peak_performance * 100
+  # Plot
+  p <- qplot(n, perf_proc, 
+        xlab = "Number of hidden layers", 
+        ylab = "% of peak performance", geom = "path",
+        ylim = c(0, 100)) +
+    theme(axis.title.y = element_text(angle=y.axis.angle)) + 
+    geom_hline(yintercept = 100, col = 2) +
+    annotate("text", label = "peak performance", x = 400, y = 95, size = 4, colour = "red") +
+    annotate("text", label = name, x = 600, y = max(perf_proc)+10, size = 4, colour = "black")
+  return(p)
+}
+
+
+p1 <- plot_perf("perf_cod_train_update", 10263, 7099)
+p2 <- plot_perf("perf_b_update", 0, 2358)
+p3 <- plot_perf("perf_c_update", 3, 0)
+p4 <- plot_perf("perf_d_update", 0, 2)
+p5 <- plot_perf("perf_w_update", 3930, 0)
+p6 <- plot_perf("perf_u_update", 4, 0)
+p7 <- plot_perf("perf_h0_update", 1573, 0)
+p8 <- plot_perf("perf_h1_update", 1573, 0)
+p9 <- plot_perf("perf_gibbs_x", 1572, 4716)
+p10 <- plot_perf("perf_gibbs_y", 20, 23)
+p11 <- plot_perf("perf_gibbs_h", 1579, 0)
+
+m <- matrix(c(1,2,3,4), nrow=2, byrow=TRUE)
+multiplot(p1, p2, p3, p4, layout = m)
+multiplot(p5, p6, p7, p8, layout = m)
+m <- matrix(c(1,2,3,3), nrow=2, byrow=TRUE)
+multiplot(p9, p10, p11, layout = m)
+```
+
+# Operations Counts and Optimization Ideas 
+
+```{r eval=FALSE}
+H_update: 
+	adds:     n 785 
+	mults:    n 784
+	sigmoid:  n 4
+	reads:    n 1570
+	writes:   n
+	if:       n 10  (should we count them???)
+
+	All: 1573 n
+
+	Comment: 1st inner loop: loop unrolling + scalar replacement
+			 2nd inner loop: full unrolling (K = 10)
+			 outer loop: unrolling + scalar replacement
+			 vector SIMD
+			 consider cache misses (blocking?, ...)
+			 if vs mask???
+
+sigmoid:
+	adds:	  2
+	mults:	
+	div:	  1
+	exp:	  1
+
+	All: 4
+
+W_update:
+	adds:   n 2*786
+	mults:  n 3*786
+	reads:  n 5*786
+	writes: n 786
+
+	All: 3930 n
+
+	Comment: loop unrolling + scalar replacement to rearrange adds and mults
+			 SIMD instructions
+
+
+b_update:
+	adds:   2*786
+	mults:  786
+	read:   3*786
+	writes: 786
+
+	All: 2358
+
+	Comment: loop unrolling
+			 SIMD instructions
+
+c_update:
+	adds:   2n
+	mults:  n
+	reads:  3n
+	writes: n
+
+	All: 3n
+
+	Comment: loop unrolling
+			 SIMD instructions
+
+d_update:
+	adds:   bound at most 2
+	mults:  0
+	reads:  20
+	writes: 20
+
+	All: 2
+
+	Comment: is it possible to do sth with IFs???
+
+U_update:
+	adds:   2 n
+	mults:  2 n
+	reads:  3 n
+	writes: 2 n 
+
+	All of them upper bound
+	All: 4 n  (40before)
+
+	Comment: IFs???
+
+gibbs_H:
+	adds:     n 787
+	mults:    n 786
+	sigmoid:  4n
+	uniform:  2n
+	reads:    n(2 + 2*786)
+	writes:   n
+	ifs:      n
+
+	All: 1579 n
+
+	Comment: inner loop - loop unrolling + scallar replacement
+			 outer loop - loop unrolling
+			 SIMD instructions	
+
+gibbs_Y:
+	adds:     10n + 11
+	mults:    10n
+	divs:     10
+	uniform:  2
+	reads:    20n + 40
+	writes:   20
+	ifs:      10
+	allocation: 10 doubles
+
+	All: 20 n + 23
+
+	Comment: loop unrolling
+			 full unrolling of K-loops
+			 SIMD instructions
+
+gibbs_X:
+	adds:     n 786
+	mults:    n 786
+	sigmoid   4*786
+	uniform   2*786
+	reads:    786 + 2*n*786
+	writes:   786
+	ifs:      786
+
+	All: 1572 n + 4716
+
+	Comment: loop unrolling + sc. replacement
+			 SIMD instructions
+
+
+uniform:
+	rand: 1
+	div:  1
+
+	All: 2
+
+COD_training_update:
+	h_update
+	allocations: n ints, 786 ints, n doubles
+	gibbs_H
+	...
+
+	All flops: 10263 n + 7099
+
+COD_train:
+	All: 2500*(10263 n + 7099)
+
+Predict:
+	adds:   n 786 + n + 3Kn + K
+	mults:  n 786
+	log:    n 10
+	exp:    n 10
+	reads:  2n786 + n + 20n + 20
+	writes: n + 10
+	ifs:    10
+
+	allocations: n doubles, 10 doubles, 
+```
+
+# Questions
+Q: add:1, mult:1, div:39, exp:?, random:? 
+
+Q: Should we count IFs or not? I think that they don't impact floationg operations
+
+Q: Measuring - I think we should measure with exactly the same input and average it
+
+Q: Measuring over unittests with smaller matrices and other input thigs? Yes/No?
+
+Q: Validation - are unittests enough? To test it in details is quite hard.
+
+Q: Input size: Can we take subset of data for faster computation? 
