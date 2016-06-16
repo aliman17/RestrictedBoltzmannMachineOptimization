@@ -14,7 +14,7 @@ If R is missing there won't be any plots but the benchmark will still be perform
 
 ### Run
 
-* Open terminal and navigate into directory rbm
+* Open terminal and navigate into directory `rbm`
 * `RUNALL.sh ./<optimization directory> "<compiler flags>"`
 
 Compiler flags can be found also in optimization directory in the folder `compiler_flags`.
