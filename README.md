@@ -26,7 +26,7 @@ Examples:
 
 ### Result
 
-The result are __performance plots__, __roofline plots__ and __cache roofline plots__ for functions specified in the config file of the optimizationl folder based on the benchmark.
+The result are __performance plots__, __roofline plots__ and __cache roofline plots__ for functions specified in file `<optimization folder>/config`. Plots are stored in `<optimization folder>`.
 
 ### Details
 
