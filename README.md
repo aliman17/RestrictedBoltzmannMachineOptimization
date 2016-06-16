@@ -5,7 +5,7 @@
 Classification problems are one of the central tasks in machine learning. Due to its widespread use not only efficient algorithms are required, but also efficient implementations. Here we present an optimized implementation of restricted Boltzmann machines for classification of images of handwritten digits. We show how it is possible to increase the performance of a simple implementation by a factor of 7 for realistic values of the number of hidden units, and point out to the limiting factors that prevent higher levels of performance.
 
 ### Requirements
- 
+
 * gcc compiler 
 * R (optional) 
 
