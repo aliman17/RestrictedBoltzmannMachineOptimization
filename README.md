@@ -14,10 +14,10 @@ If R is missing there won't be any plots but the benchmark will still be perform
 
 ### Run
 
-* Open terminal and navigate into directory rbm
-* `RUNALL.sh ./<optimization directory> "<compiler flags>"`
+* Open terminal and navigate into directory `rbm`
+* Then run `RUNALL.sh <optimization folder> "<compiler flags>"`, where `<optimization directory>` represents folder with optimization and `<compiler flags>` compilation flags
 
-Compiler flags can be found also in optimization directory in the folder `compiler_flags`.
+Compiler flags can be also found in `<optimization folder>/compiler_flags`.
 Examples:
 
 * `RUNALL.sh ./baseline`
@@ -26,7 +26,7 @@ Examples:
 
 ### Result
 
-The result are __performance plots__, __roofline plots__ and __cache roofline plots__ for functions specified in the config file of the optimizationl folder based on the benchmark.
+The result are __performance plots__, __roofline plots__ and __cache roofline plots__ for functions specified in file `<optimization folder>/config`. Plots are stored in `<optimization folder>`.
 
 ### Details
 
